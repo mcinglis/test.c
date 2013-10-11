@@ -41,11 +41,11 @@ Test.c should compile with any C11 compiler, such as GCC 4.8 or Clang 3.3.
 # To run the default development build (with debugging symbols):
 $ make
 # To make it go a bit faster:
-$ make CFLAGS='-std=c11 -O2'
+$ CFLAGS='-std=c11 -O2' make
 # To use your non-default C compiler:
-$ make CC=clang
+$ CC=clang make
 # If you don't have a C11 compiler, it can compile under C99 (for now):
-$ make CFLAGS=-std=c99
+$ CFLAGS=-std=c99 make
 ```
 
 
