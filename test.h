@@ -25,10 +25,10 @@ typedef struct TestResults {
 } TestResults;
 
 
-#define TEST( f ) ( ( Test const ){ .name = #f, .func = f } )
+#define TEST( f ) { .name = #f, .func = f }
 
 
-#define TEST_END ( ( Test const ){ .func = NULL, .name = NULL } )
+#define TEST_END { .name = NULL, .func = NULL }
 
 
 TestResults test_run_all( char const * name, Test const * tests );
