@@ -1,11 +1,29 @@
-// tests/test.c
+// test.c
 
-#include "test.h" // Test
+// Copyright (C) 2013  Malcolm Inglis
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or (at
+// your option) any later version.
+//
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+#include "test.h"       // Test, TestAssertion, TestResults
+
+#include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
 
 
+// Counts how many assertions there are in the given array up to and
+// including the terminating assertion with a null expression field.
 size_t test_assert_size( TestAssertion const * const assertions )
 {
     int len = 0;
@@ -18,7 +36,8 @@ size_t test_assert_size( TestAssertion const * const assertions )
 
 TestAssertion * test_assert_alloc( TestAssertion const * const assertions )
 {
-    size_t nbytes = test_assert_size( assertions ) * sizeof( TestAssertion );
+    size_t const nbytes = test_assert_size( assertions )
+                          * sizeof( TestAssertion );
     TestAssertion * const copy = malloc( nbytes );
     memcpy( copy, assertions, nbytes );
     return copy;
@@ -26,17 +45,32 @@ TestAssertion * test_assert_alloc( TestAssertion const * const assertions )
 
 
 static
-TestResults test_run( Test const test,
-                      TestResults results )
+bool test_run( Test const test )
 {
-    if ( test.func() == true ) {
-        printf( "  pass: %s\n", test.name );
-        results.passed += 1;
-    } else {
-        printf( "  fail: %s\n", test.name );
-        results.failed += 1;
+    #define INDENT "    "
+    bool pass = true;
+    TestAssertion * const assertions = test.func();
+    if ( assertions != NULL ) {
+        for ( int i = 0; assertions[ i ].expr != NULL; i += 1 ) {
+            if ( assertions[ i ].result == false ) {
+                if ( pass == true ) {
+                    printf( INDENT "fail: %s\n", test.name );
+                }
+                printf( INDENT INDENT "false: %s", assertions[ i ].expr );
+                if ( assertions[ i ].has_id == true ) {
+                    printf( INDENT "(id = %d)", assertions[ i ].id );
+                }
+                printf( "\n" );
+                pass = false;
+            }
+        }
+        free( assertions );
     }
-    return results;
+    if ( pass == true ) {
+        printf( INDENT "pass: %s\n", test.name );
+    }
+    return pass;
+    #undef INDENT
 }
 
 
@@ -46,21 +80,15 @@ TestResults test_run_all( char const * const name,
     printf( "Running %s tests...\n", name );
     TestResults results = { .passed = 0, .failed = 0 };
     for ( int i = 0; tests[ i ].func != NULL; i += 1 ) {
-        results = test_run( tests[ i ], results );
+        bool passed = test_run( tests[ i ] );
+        if ( passed ) {
+            results.passed += 1;
+        } else {
+            results.failed += 1;
+        }
     }
     printf( "Finished %s tests: %d passed, and %d failed.\n",
             name, results.passed, results.failed );
     return results;
-}
-
-
-int test__return_val( TestResults const * const results )
-{
-    for ( int i = 0; results[ i ].failed != -1; i += 1 ) {
-        if ( results[ i ].failed > 0 ) {
-            return 1;
-        }
-    }
-    return 0;
 }
 
