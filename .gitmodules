@@ -1,0 +1,3 @@
+[submodule "packages/macromap.h"]
+	path = packages/macromap.h
+	url = git@github.com:mcinglis/macromap.h.git

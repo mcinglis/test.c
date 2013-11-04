@@ -19,16 +19,32 @@ typedef struct Test {
 } Test;
 
 
+typedef struct TestAssertion {
+    char const * expr;
+    bool result;
+} TestAssertion;
+
+
 typedef struct TestResults {
     int passed;
     int failed;
 } TestResults;
+
+typedef struct TestFail {
+    char * condition;
+}
 
 
 #define TEST( f ) { .name = #f, .func = f }
 
 
 #define TEST_END { .name = NULL, .func = NULL }
+
+
+#define TEST_ASSERT1( e ) \
+    if ( !( e ) ) { \
+        return #e;
+    }
 
 
 TestResults test_run_all( char const * name, Test const * tests );
