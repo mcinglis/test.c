@@ -73,7 +73,9 @@ TestAssertion * test_assertions_alloc( TestAssertion const * assertions );
 
 // Takes a variable number of boolean expressions, and evaluates to a
 // pointer to an array of assertions on the heap, with each assertion
-// corresponding to a given expression.
+// corresponding to a given expression. Note that because this uses
+// `MACROMAP`, this can't take more than 128 arguments, and no argument
+// can begin with more than four parentheses.
 #define test_assert( ... ) \
     test_assertions_alloc( ( TestAssertion[] ){ \
         MACROMAP( TEST_ASSERTIONS_EL, __VA_ARGS__ ) \
@@ -113,7 +115,9 @@ TestAssertion * test_assertions_alloc( TestAssertion const * assertions );
 
 // Takes a variable number of test function expressions, and evaluates
 // to a `Test[]` literal with each test named as a stringification of
-// its corresponding function expression.
+// its corresponding function expression. Note that because this uses
+// `MACROMAP`, this can't take more than 128 arguments, and no argument
+// can begin with more than 4 nested parentheses.
 #define TESTS( ... ) { MACROMAP( TESTS_EL, __VA_ARGS__ ) TESTS_END }
 
 
