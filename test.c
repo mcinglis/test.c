@@ -34,7 +34,7 @@ size_t test_assert_size( TestAssertion const * const assertions )
 }
 
 
-TestAssertion * test_assert_alloc( TestAssertion const * const assertions )
+TestAssertion * test_assertions_alloc( TestAssertion const * const assertions )
 {
     size_t const nbytes = test_assert_size( assertions )
                           * sizeof( TestAssertion );
@@ -74,8 +74,8 @@ bool test_run( Test const test )
 }
 
 
-TestResults test_run_all( char const * const name,
-                          Test const * const tests )
+TestResults tests_run( char const * const name,
+                       Test const * const tests )
 {
     printf( "Running %s tests...\n", name );
     TestResults results = { .passed = 0, .failed = 0 };

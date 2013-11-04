@@ -114,7 +114,7 @@ TestAssertion * test_assertions_alloc( TestAssertion const * assertions );
 // Takes a variable number of test function expressions, and evaluates
 // to a `Test[]` literal with each test named as a stringification of
 // its corresponding function expression.
-#define TESTS( ... ) { MACROMAP( TESTS_EL, __VA_ARGS__ ) TEST_END }
+#define TESTS( ... ) { MACROMAP( TESTS_EL, __VA_ARGS__ ) TESTS_END }
 
 
 // Runs each test in the `tests` array, and prints the results to
