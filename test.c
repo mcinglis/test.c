@@ -1,9 +1,28 @@
 // tests/test.c
 
-#include <stdbool.h>    // bool
-#include <stdio.h>      // NULL, printf
-
 #include "test.h" // Test
+
+#include <stdbool.h>
+#include <stdio.h>
+
+
+size_t test_assert_size( TestAssertion const * const assertions )
+{
+    int len = 0;
+    for ( int i = 0; assertions[ i ].expr != NULL; i += 1 ) {
+        len += 1;
+    }
+    return len;
+}
+
+
+TestAssertion * test_assert_alloc( TestAssertion const * const assertions )
+{
+    size_t nbytes = test_assert_size( assertions ) * sizeof( TestAssertion );
+    TestAssertion * const copy = malloc( nbytes );
+    memcpy( copy, assertions, nbytes );
+    return copy;
+}
 
 
 static
