@@ -1,6 +1,6 @@
 # Test.c
 
-Test.c is a nice testing library for C. It encourages your tests to be modular, reusable, and composable.
+Test.c is a testing library for C that encourages modular and composable tests.
 
 ``` c
 #include "test.h"
