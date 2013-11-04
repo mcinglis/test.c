@@ -44,9 +44,9 @@ int main( void ) {
 }
 ```
 
-Files that `#include <test.h>` also need to be able to `#include <macromap.h/macromap.h>`, from [Macromap.h](https://github.com/mcinglis/macromap.h). See [Trie.c](https://github.com/mcinglis/trie.c) for an example of how to manage this (and for an extensive example of using Test.c).
-
 [`test.h`](/test.h) has the complete interface and documentation.
+
+Files that `#include <test.h>` also need to be able to `#include <macromap.h/macromap.h>`, from [Macromap.h](https://github.com/mcinglis/macromap.h). Have a look at [Trie.c](https://github.com/mcinglis/trie.c) for an example of how to manage this (and for an extensive example of using Test.c).
 
 
 ## Building
