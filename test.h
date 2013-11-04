@@ -25,11 +25,11 @@
 #include <macromap.h/macromap.h>        // MACROMAP
 
 
-// An assertion is a boolean expression and its evaluation. It may be
-// identified by an integer, so as to provide more information than its
-// expression (e.g. the expression may consist of variables, but readers
-// can't know the values of those variables without a way to number each
-// assertion).
+// An assertion is a boolean expression and its evaluation. An assertion
+// may be identified so as to provide information beyond the expression.
+// This is useful when multiple assertions are made with the same
+// expression, but different values. Unique identifiers can make it
+// easier to identify when and where the assertion failed.
 typedef struct TestAssertion {
     char const * expr;
     bool result;
@@ -38,68 +38,89 @@ typedef struct TestAssertion {
 } TestAssertion;
 
 
-// A test is a named function that returns an array of assertions, which
-// may be true or false.
+// A test is a named function that returns an array of assertions
+// with an assertion with a null `expr` field as the end-sentinel.
 typedef struct Test {
-    // Returns an array of assertions terminated by an assertion with
-    // a null `expr` field.
-    TestAssertion * ( *func )( void );
-    // Used for printing the results of running this test.
     char const * name;
+    TestAssertion * ( *func )( void );
 } Test;
 
 
-// Counts of the tests that passed and the tests that failed. A value of
-// this struct is returned by `test_run_all`.
+// Returned by `tests_run` to communicate how many tests of its given
+// array passed (i.e. all assertions were true) and how many failed.
 typedef struct TestResults {
     int passed;
     int failed;
 } TestResults;
 
 
-// Copies an array of assertions, terminated by an assertion with a null
-// expression field, onto the heap.
-TestAssertion * test_assert_alloc( TestAssertion const * assertions );
+// The end of an assertion array is an assertion with a null `expr`.
+#define TEST_ASSERTIONS_END { .expr = NULL }
 
-// Creates an element of an assertion list by stringifying the given
-// expression. The trailing comma separates each element when building
-// an array of assertions with `MACROMAP`.
-#define TEST_ASSERT_EL( EXPR ) \
+
+// Copies an array of assertions onto the heap.
+TestAssertion * test_assertions_alloc( TestAssertion const * assertions );
+
+
+// TODO: functions to append to and concatenate assertion arrays.
+
+
+// Evaluates to an element of a `TestAssertion[]` literal, by
+// stringifying the given expression. The trailing comma separates each
+// element in the literal.
+#define TEST_ASSERTIONS_EL( EXPR ) \
     ( TestAssertion ){ .expr = #EXPR, .result = ( EXPR ), .has_id = false },
 
-// Takes a variable number of expressions, and returns a pointer to an
-// array of assertions on the heap, with each assertion corresponding to
-// a given expression.
+// Takes a variable number of boolean expressions, and evaluates to a
+// pointer to an array of assertions on the heap, with each assertion
+// corresponding to a given expression.
 #define test_assert( ... ) \
-    test_assert_alloc( ( TestAssertion[] ){ \
-        MACROMAP( TEST_ASSERT_EL, __VA_ARGS__ ) \
-        { .expr = NULL } \
+    test_assertions_alloc( ( TestAssertion[] ){ \
+        MACROMAP( TEST_ASSERTIONS_EL, __VA_ARGS__ ) \
+        TEST_ASSERTIONS_END \
     } )
 
-// If the given expression evaluates to false, then this causes the
-// containing function to return am assertion array with an assertion
-// corresponding to the given expression. This is an easy way to assert
-// things in a loop. The returned array will be terminated with an
-// expression with a null `expr` field. The single assertion will be
-// identified with the given `id` argument.
+
+// TODO: interface to identify assertions similar to `test_assert`.
+
+
+// Evaluates to code that checks if the given boolean expression
+// evaluates to false, and if so, causes the containing function to
+// return a pointer to an assertion array on the heap. This array
+// will contain one assertion corresponding to the given expression and
+// identified with the given `ID` argument.
 #define TEST_REQUIRE( EXPR, ID ) { \
     bool result = ( EXPR ); \
     if ( !result ) { \
-        return test_assert_alloc( ( TestAssertion[] ){ \
+        return test_assertions_alloc( ( TestAssertion[] ){ \
             { .expr = #EXPR, .result = result, .has_id = true, .id = ID }, \
-            { .expr = NULL } \
+            TEST_ASSERTIONS_END \
         } ); \
     } \
 }
 
 
+// Evaluates to a `Test` literal with the given test function
+// expression, and named with the stringification of that expression.
 #define TEST( FUNC ) { .name = #FUNC, .func = FUNC }
-#define TEST_END { .name = NULL, .func = NULL }
-#define TEST_EL( FUNC ) TEST( FUNC ),
-#define TESTS( ... ) { MACROMAP( TEST_EL, __VA_ARGS__ ) TEST_END }
+
+// The end of a test array is a test with a null `func`.
+#define TESTS_END { .func = NULL }
+
+// Evaluates to an element of a `Test[]` literal. The trailing comma
+// separates each element in the literal.
+#define TESTS_EL( FUNC ) TEST( FUNC ),
+
+// Takes a variable number of test function expressions, and evaluates
+// to a `Test[]` literal with each test named as a stringification of
+// its corresponding function expression.
+#define TESTS( ... ) { MACROMAP( TESTS_EL, __VA_ARGS__ ) TEST_END }
 
 
-TestResults test_run_all( char const * name, Test const * tests );
+// Runs each test in the `tests` array, and prints the results to
+// stdout, with `name` printed as the name of the set of tests.
+TestResults tests_run( char const * name, Test const * tests );
 
 
 #endif // INCLUDED_TEST_H
+

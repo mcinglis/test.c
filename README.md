@@ -7,10 +7,7 @@ Test.c is a nice testing library for C. It encourages your tests to be modular, 
 
 TestAssertion * addition_works( void )
 {
-    return test_assert(
-        5 + 0 == 5,
-        2 + 4 == 7
-    );
+    return test_assert( 2 + 4 == 7 );
 }
 
 TestAssertion * multiplication_works( void )
@@ -46,6 +43,8 @@ int main( void ) {
     // Finished arithmetic tests: 1 passed, and 2 failed.
 }
 ```
+
+Source files that include [`test.h`] need to be able to include [Macromap.h](https://github.com/mcinglis/macromap.h)'s header file from `macromap.h/macromap.h`. See [Trie.c](https://github.com/mcinglis/trie.c) for an example of how to manage this (and for an extensive example of using Test.c).
 
 See [`test.h`](/test.h) for the complete interface and documentation.
 
