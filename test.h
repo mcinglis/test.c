@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+
 #ifndef INCLUDED_TEST_H
 #define INCLUDED_TEST_H
 
@@ -26,28 +27,37 @@
 
 
 // An assertion is a boolean expression and its evaluation. An assertion
-// may be identified so as to provide information beyond the expression.
+// may be identified so that it's easier to tell when and where it failed.
 // This is useful when multiple assertions are made with the same
-// expression, but different values. Unique identifiers can make it
-// easier to identify when and where the assertion failed.
+// expression, but different values.
 typedef struct TestAssertion {
+
     char const * expr;
     bool result;
-    bool has_id;
+    char const * id_expr;
     int id;
+
 } TestAssertion;
 
 
-// A test is a named function that returns an array of assertions
-// with an assertion with a null `expr` field as the end-sentinel.
+// A test is a named function that generates an array of assertions. A
+// test is considered to pass if all these assertions are true.
 typedef struct Test {
+
+    // Used for displaying and naming the results of the test.
     char const * name;
+
+    // Returns a dynamically-allocated array of assertions terminated by
+    // an assertion with a null `expr` field. It may also return null to
+    // signal that it doesn't make any assertions: this is commonly used
+    // with `TEST_REQUIRE`, or tests that fail by prompting a run-time
+    // error.
     TestAssertion * ( *func )( void );
+
 } Test;
 
 
-// Returned by `tests_run` to communicate how many tests of its given
-// array passed (i.e. all assertions were true) and how many failed.
+// Represents the results of running a set of tests.
 typedef struct TestResults {
     int passed;
     int failed;
@@ -62,14 +72,11 @@ typedef struct TestResults {
 TestAssertion * test_assertions_alloc( TestAssertion const * assertions );
 
 
-// TODO: functions to append to and concatenate assertion arrays.
-
-
 // Evaluates to an element of a `TestAssertion[]` literal, by
 // stringifying the given expression. The trailing comma separates each
-// element in the literal.
-#define TEST_ASSERTIONS_EL( EXPR ) \
-    ( TestAssertion ){ .expr = #EXPR, .result = ( EXPR ), .has_id = false },
+// element in the literal. The assertion is not identified.
+#define TEST_ASSERTIONS_EL( EXPR ) { .expr = #EXPR, .result = ( EXPR ) },
+
 
 // Takes a variable number of boolean expressions, and evaluates to a
 // pointer to an array of assertions on the heap, with each assertion
@@ -83,9 +90,6 @@ TestAssertion * test_assertions_alloc( TestAssertion const * assertions );
     } )
 
 
-// TODO: interface to identify assertions similar to `test_assert`.
-
-
 // Evaluates to code that checks if the given boolean expression
 // evaluates to false, and if so, causes the containing function to
 // return a pointer to an assertion array on the heap. This array
@@ -95,7 +99,7 @@ TestAssertion * test_assertions_alloc( TestAssertion const * assertions );
     bool result = ( EXPR ); \
     if ( !result ) { \
         return test_assertions_alloc( ( TestAssertion[] ){ \
-            { .expr = #EXPR, .result = result, .has_id = true, .id = ID }, \
+            { .expr = #EXPR, .result = result, .id_expr = #ID, .id = ID }, \
             TEST_ASSERTIONS_END \
         } ); \
     } \
@@ -126,5 +130,5 @@ TestAssertion * test_assertions_alloc( TestAssertion const * assertions );
 TestResults tests_run( char const * name, Test const * tests );
 
 
-#endif // INCLUDED_TEST_H
+#endif // ifndef INCLUDED_TEST_H
 

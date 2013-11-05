@@ -7,15 +7,15 @@ Test.c is a testing library for C that encourages modular and composable tests.
 
 TestAssertion * addition_works( void )
 {
-    return test_assert( 2 + 4 == 7 );
+    return test_assert( 2 + 2 == 4,
+                        ( 1 + 1 != 2 ) || ( 9 - 3 == 6 ) );
 }
 
 TestAssertion * multiplication_works( void )
 {
-    return test_assert(
-        3 * 4 == 12,
-        9 * 2 == 18
-    );
+    return test_assert( 1 * 5 == 1,
+                        9 * 2 == 18,
+                        3 * 4 != 12 );
 }
 
 TestAssertion * some_numbers_dont_exist( void )
@@ -26,20 +26,19 @@ TestAssertion * some_numbers_dont_exist( void )
     return NULL;
 }
 
-Test const arithmetic_tests[] = TESTS(
-    addition_works,
-    multiplication_works,
-    some_numbers_dont_exist
-);
+Test const arithmetic_tests[] = TESTS( addition_works,
+                                       multiplication_works,
+                                       some_numbers_dont_exist );
 
 int main( void ) {
-    test_run_all( "arithmetic", arithmetic_tests )
+    tests_run( "arithmetic", arithmetic_tests )
     // Running arithmetic tests...
-    //     fail: addition_works
-    //         false: 2 + 4 == 7
-    //     pass: multiplication_works
+    //     pass: addition_works
+    //     fail: multiplication_works
+    //         false: 1 * 5 == 1
+    //         false: 3 * 4 != 12
     //     fail: some_numbers_dont_exist
-    //         false: x != 17 && x != 42    (id = 17)
+    //         false: x != 17 && x != 42    (x = 17)
     // Finished arithmetic tests: 1 passed, and 2 failed.
 }
 ```

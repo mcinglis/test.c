@@ -15,11 +15,15 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+
 #include "test.h"       // Test, TestAssertion, TestResults
 
-#include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
+#include <assert.h>
+
+#define INDENT "    "   // Four spaces.
 
 
 // Counts how many assertions there are in the given array up to and
@@ -47,18 +51,19 @@ TestAssertion * test_assertions_alloc( TestAssertion const * const assertions )
 static
 bool test_run( Test const test )
 {
-    #define INDENT "    "
-    bool pass = true;
+    assert( test.func != NULL );
     TestAssertion * const assertions = test.func();
+    bool pass = true;
     if ( assertions != NULL ) {
         for ( int i = 0; assertions[ i ].expr != NULL; i += 1 ) {
-            if ( assertions[ i ].result == false ) {
+            TestAssertion const a = assertions[ i ];
+            if ( a.result == false ) {
                 if ( pass == true ) {
                     printf( INDENT "fail: %s\n", test.name );
                 }
-                printf( INDENT INDENT "false: %s", assertions[ i ].expr );
-                if ( assertions[ i ].has_id == true ) {
-                    printf( INDENT "(id = %d)", assertions[ i ].id );
+                printf( INDENT INDENT "false: %s", a.expr );
+                if ( a.id_expr != NULL ) {
+                    printf( INDENT "(%s = %d)", a.id_expr, a.id );
                 }
                 printf( "\n" );
                 pass = false;
@@ -70,7 +75,6 @@ bool test_run( Test const test )
         printf( INDENT "pass: %s\n", test.name );
     }
     return pass;
-    #undef INDENT
 }
 
 

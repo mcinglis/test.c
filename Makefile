@@ -6,7 +6,6 @@ CFLAGS += -std=c11 -g -Wall -Wextra -Wpedantic \
           -Wredundant-decls -Wmissing-include-dirs -Wswitch-default \
           -Wcast-align -Wnested-externs -Wno-missing-field-initializers
 
-
 ifeq ($(CC),gcc)
     CFLAGS += -Og -fstack-protector-strong -Wjump-misses-init -Wlogical-op
 endif
@@ -14,12 +13,21 @@ ifeq ($(CC),clang)
     CFLAGS += -O0
 endif
 
-CPPFLAGS += -I./packages
+CPPFLAGS += -I. -I./packages
+
 
 objects = test.o
+examples_src = $(wildcard examples/*.c)
+examples_bin = $(basename $(examples_src))
+deprules = $(objects:.o=.d) $(examples_src:.c=.d)
 
-all: $(objects)
+
+all: $(objects) $(examples_bin)
 .PHONY: all
+
+
+$(examples_bin): $(objects)
+
 
 # Have the compiler output dependency files with make targets for each
 # of the object files. The `MT` option specifies the dependency file
@@ -29,10 +37,12 @@ all: $(objects)
 
 # Include each of those dependency files; Make will run the rule above
 # to generate each dependency file (if it needs to).
-deprules = $(objects:.o=.d)
 -include $(deprules)
 
+
 clean:
-	-rm -f $(deprules) $(objects)
+	-rm -f $(deprules)
+	-rm -f $(objects)
+	-rm -f $(examples_bin)
 .PHONY: clean
 
