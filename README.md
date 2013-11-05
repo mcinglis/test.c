@@ -60,7 +60,7 @@ int main( void ) {
 }
 ```
 
-The `Test` and `TestAssertion` structs are `typedef`'d with the same name, so using `struct` with them is optional. It's used above as a demonstration; I usually leave off the `struct`.
+The `Test` and `TestAssertion` structs are `typedef`'d with the same name, so using `struct` with them is optional. It's used above as a demonstration, but I usually leave it off.
 
 [`test.h`](/test.h) has the complete interface and documentation.
 
@@ -72,12 +72,10 @@ Files that include `test.h` also need to be able to `#include <macromap.h/macrom
 Test.c compiles with GCC 4.8 and Clang 3.3. It should compile with any C11 compiler that can [generate dependency files](/Makefile#L24).
 
 ``` sh
-# After cloning the repository, you'll have to:
-$ git submodule init
-# Also after cloning, or pulling a commit that updates of a submodule:
-$ git submodule update
+# After cloning the repository, or pulling a commit that updates a submodule:
+$ make submodules
 
-# To run the default development build (with debugging symbols):
+# Then, to run the default development build (with debugging symbols):
 $ make
 # To build with optimizations and without debugging symbols:
 $ CFLAGS='-std=c11 -O2' make

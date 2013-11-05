@@ -26,6 +26,12 @@ all: $(objects) $(examples_bin)
 .PHONY: all
 
 
+submodules:
+	git submodule init
+	git submodule update
+.PHONY: submodules
+
+
 $(examples_bin): $(objects)
 
 
