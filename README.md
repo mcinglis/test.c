@@ -31,7 +31,7 @@ struct Test const arithmetic_tests[] = TESTS( addition_works,
                                               some_numbers_dont_exist );
 
 int main( void ) {
-    tests_run( "arithmetic", arithmetic_tests )
+    tests_run( "arithmetic", arithmetic_tests );
     // Running arithmetic tests...
     //     pass: addition_works
     //     fail: multiplication_works
@@ -43,6 +43,8 @@ int main( void ) {
 }
 ```
 
+The `Test` and `TestAssertion` structs are `typedef`'d with the same name, so using `struct` with them is optional. It's used above as a demonstration; I usually leave off the `struct`.
+
 [`test.h`](/test.h) has the complete interface and documentation.
 
 Files that `#include <test.h>` also need to be able to `#include <macromap.h/macromap.h>`, from [Macromap.h](https://github.com/mcinglis/macromap.h). Have a look at [Trie.c](https://github.com/mcinglis/trie.c) for an example of how to manage this (and for an extensive example of using Test.c).
@@ -53,8 +55,9 @@ Files that `#include <test.h>` also need to be able to `#include <macromap.h/mac
 Test.c compiles with GCC 4.8 and Clang 3.3. It should compile with any C11 compiler that can [generate dependency files](/Makefile#L24).
 
 ``` sh
-# Make sure you initialize the submodules first. You only need to do this once.
+# After cloning the repository, you'll have to:
 $ git submodule init
+# Also after cloning, or pulling a commit that updates of a submodule:
 $ git submodule update
 
 # To run the default development build (with debugging symbols):
