@@ -1,44 +1,61 @@
 # Test.c
 
-Test.c is a testing library for C that encourages modular and composable tests.
+Test.c is a modern, simple testing library for C.
 
 ``` c
 #include "test.h"
 
-struct TestAssertion * addition_works( void )
+void * before_each( void )
 {
-    return test_assert( 2 + 2 == 4,
-                        ( 1 + 1 != 2 ) || ( 9 - 3 == 6 ) );
+    int * const x = malloc( sizeof( *x ) );
+    *x = 2;
+    return x;
 }
 
-struct TestAssertion * multiplication_works( void )
+void after_each( void * const data )
 {
-    return test_assert( 1 * 5 == 1,
-                        9 * 2 == 18,
+    free( data );
+}
+
+struct TestAssertion * addition_works( void * const data )
+{
+    int * const x = data;
+    *x = 3;
+    return test_assert( *x + *x == 6,
+                        ( 1 + 1 == 3 ) || ( 9 - 3 == 6 ) );
+}
+
+struct TestAssertion * multiplication_works( void * const data )
+{
+    int const * const x = data;
+    return test_assert( *x * 5 == 5,
+                        9 * *x == 18,
                         3 * 4 != 12 );
 }
 
-struct TestAssertion * some_numbers_dont_exist( void )
+struct TestAssertion * some_numbers_dont_exist( void * const data )
 {
-    for ( int x = 0; x < 100; x += 1 ) {
-        TEST_REQUIRE( x != 17 && x != 42, x );
+    for ( int n = 0; n < 100; n += 1 ) {
+        TEST_REQUIRE( n != 17 && n != 42, n );
     }
     return NULL;
 }
 
-struct Test const arithmetic_tests[] = TESTS( addition_works,
-                                              multiplication_works,
-                                              some_numbers_dont_exist );
+struct Test const arithmetic_tests[] = TESTS_FIX( before_each, after_each,
+    addition_works,
+    multiplication_works,
+    some_numbers_dont_exist
+);
 
 int main( void ) {
     tests_run( "arithmetic", arithmetic_tests );
     // Running arithmetic tests...
-    //     pass: addition_works
-    //     fail: multiplication_works
-    //         false: 1 * 5 == 1
-    //         false: 3 * 4 != 12
-    //     fail: some_numbers_dont_exist
-    //         false: x != 17 && x != 42    (x = 17)
+    //     pass:  addition_works
+    //     fail:  multiplication_works
+    //         false:  *x * 5 == 5
+    //         false:  3 * 4 != 12
+    //     fail:  some_numbers_dont_exist
+    //         false for n = 17:  n != 17 && n != 42
     // Finished arithmetic tests: 1 passed, and 2 failed.
 }
 ```
@@ -47,7 +64,7 @@ The `Test` and `TestAssertion` structs are `typedef`'d with the same name, so us
 
 [`test.h`](/test.h) has the complete interface and documentation.
 
-Files that `#include <test.h>` also need to be able to `#include <macromap.h/macromap.h>`, from [Macromap.h](https://github.com/mcinglis/macromap.h). Have a look at [Trie.c](https://github.com/mcinglis/trie.c) for an example of how to manage this (and for an extensive example of using Test.c).
+Files that include `test.h` also need to be able to `#include <macromap.h/macromap.h>`, from [Macromap.h](https://github.com/mcinglis/macromap.h). Have a look at [Trie.c](https://github.com/mcinglis/trie.c) for an example of how to manage this (and for an extensive example of using Test.c).
 
 
 ## Building

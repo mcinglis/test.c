@@ -23,12 +23,12 @@
 #include <string.h>
 #include <assert.h>
 
-#define INDENT "    "   // Four spaces.
+
+#define INDENT "    "
 
 
-// Counts how many assertions there are in the given array up to and
-// including the terminating assertion with a null expression field.
-size_t test_assert_size( TestAssertion const * const assertions )
+static
+size_t test_assertions_size( TestAssertion const * const assertions )
 {
     int len = 0;
     for ( int i = 0; assertions[ i ].expr != NULL; i += 1 ) {
@@ -40,7 +40,7 @@ size_t test_assert_size( TestAssertion const * const assertions )
 
 TestAssertion * test_assertions_alloc( TestAssertion const * const assertions )
 {
-    size_t const nbytes = test_assert_size( assertions )
+    size_t const nbytes = test_assertions_size( assertions )
                           * sizeof( TestAssertion );
     TestAssertion * const copy = malloc( nbytes );
     memcpy( copy, assertions, nbytes );
@@ -49,30 +49,42 @@ TestAssertion * test_assertions_alloc( TestAssertion const * const assertions )
 
 
 static
+TestAssertion * test_gen_assertions( Test const test )
+{
+    void * const data = ( test.before == NULL ) ? NULL : test.before();
+    TestAssertion * const assertions = test.func( data );
+    if ( test.after != NULL ) {
+        test.after( data );
+    }
+    return assertions;
+}
+
+
+static
 bool test_run( Test const test )
 {
     assert( test.func != NULL );
-    TestAssertion * const assertions = test.func();
+    TestAssertion * const assertions = test_gen_assertions( test );
     bool pass = true;
     if ( assertions != NULL ) {
         for ( int i = 0; assertions[ i ].expr != NULL; i += 1 ) {
             TestAssertion const a = assertions[ i ];
             if ( a.result == false ) {
                 if ( pass == true ) {
-                    printf( INDENT "fail: %s\n", test.name );
+                    printf( INDENT "fail:  %s\n", test.name );
                 }
-                printf( INDENT INDENT "false: %s", a.expr );
+                printf( INDENT INDENT "false" );
                 if ( a.id_expr != NULL ) {
-                    printf( INDENT "(%s = %d)", a.id_expr, a.id );
+                    printf( " for %s = %d", a.id_expr, a.id );
                 }
-                printf( "\n" );
+                printf( ":  %s\n", a.expr );
                 pass = false;
             }
         }
         free( assertions );
     }
     if ( pass == true ) {
-        printf( INDENT "pass: %s\n", test.name );
+        printf( INDENT "pass:  %s\n", test.name );
     }
     return pass;
 }

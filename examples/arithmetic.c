@@ -20,35 +20,52 @@
 // Test, TestAssertion, test_assert, TEST_REQUIRE, tests_run
 
 
-TestAssertion * addition_works( void )
+void * before_each( void )
 {
+    int * const x = malloc( sizeof( *x ) );
+    *x = 2;
+    return x;
+}
+
+
+void after_each( void * const data )
+{
+    free( data );
+}
+
+
+TestAssertion * addition_works( void * const data )
+{
+    int * const x = data;
+    *x = 3;
     return test_assert(
-        2 + 2 == 4,
+        *x + *x == 6,
         ( 1 + 1 == 3 ) || ( 9 - 3 == 6 )
     );
 }
 
 
-TestAssertion * multiplication_works( void )
+TestAssertion * multiplication_works( void * const data )
 {
+    int const * const x = data;
     return test_assert(
-        1 * 5 == 1,
-        9 * 2 == 18,
+        *x * 5 == 5,
+        9 * *x == 18,
         3 * 4 != 12
     );
 }
 
 
-TestAssertion * some_numbers_dont_exist( void )
+TestAssertion * some_numbers_dont_exist( void * const data )
 {
-    for ( int x = 0; x < 100; x += 1 ) {
-        TEST_REQUIRE( x != 17 && x != 42, x );
+    for ( int n = 0; n < 100; n += 1 ) {
+        TEST_REQUIRE( n != 17 && n != 42, n );
     }
     return NULL;
 }
 
 
-Test const arithmetic_tests[] = TESTS(
+Test const arithmetic_tests[] = TESTS_FIX( before_each, after_each,
     addition_works,
     multiplication_works,
     some_numbers_dont_exist
