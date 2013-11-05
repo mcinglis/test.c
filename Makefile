@@ -22,8 +22,16 @@ examples_bin = $(basename $(examples_src))
 deprules = $(objects:.o=.d) $(examples_src:.c=.d)
 
 
-all: $(objects) $(examples_bin)
+all: submodules $(objects) $(examples_bin)
 .PHONY: all
+
+
+submodules: .submodule.make
+.PHONY: submodules
+.submodule.make: .git/HEAD
+	git submodule init
+	git submodule update
+	touch .submodule.make
 
 
 $(examples_bin): $(objects)
