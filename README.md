@@ -53,6 +53,10 @@ Files that `#include <test.h>` also need to be able to `#include <macromap.h/mac
 Test.c compiles with GCC 4.8 and Clang 3.3. It should compile with any C11 compiler that can [generate dependency files](/Makefile#L24).
 
 ``` sh
+# Make sure you initialize the submodules first. You only need to do this once.
+$ git submodule init
+$ git submodule update
+
 # To run the default development build (with debugging symbols):
 $ make
 # To build with optimizations and without debugging symbols:
