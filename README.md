@@ -5,20 +5,20 @@ Test.c is a testing library for C that encourages modular and composable tests.
 ``` c
 #include "test.h"
 
-TestAssertion * addition_works( void )
+struct TestAssertion * addition_works( void )
 {
     return test_assert( 2 + 2 == 4,
                         ( 1 + 1 != 2 ) || ( 9 - 3 == 6 ) );
 }
 
-TestAssertion * multiplication_works( void )
+struct TestAssertion * multiplication_works( void )
 {
     return test_assert( 1 * 5 == 1,
                         9 * 2 == 18,
                         3 * 4 != 12 );
 }
 
-TestAssertion * some_numbers_dont_exist( void )
+struct TestAssertion * some_numbers_dont_exist( void )
 {
     for ( int x = 0; x < 100; x += 1 ) {
         TEST_REQUIRE( x != 17 && x != 42, x );
@@ -26,9 +26,9 @@ TestAssertion * some_numbers_dont_exist( void )
     return NULL;
 }
 
-Test const arithmetic_tests[] = TESTS( addition_works,
-                                       multiplication_works,
-                                       some_numbers_dont_exist );
+struct Test const arithmetic_tests[] = TESTS( addition_works,
+                                              multiplication_works,
+                                              some_numbers_dont_exist );
 
 int main( void ) {
     tests_run( "arithmetic", arithmetic_tests )
