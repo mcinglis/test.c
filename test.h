@@ -22,6 +22,7 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include <macromap.h/macromap.h>        // MACROMAP
 
@@ -49,7 +50,7 @@ typedef struct Test {
     // an assertion with a null `expr` field. It may also return null to
     // signal that it doesn't make any assertions: this is commonly used
     // with `TEST_REQUIRE`, or tests that fail by prompting a run-time
-    // error.
+    // error like a segmentation fault.
     TestAssertion * ( *func )( void * data );
 
     // If non-null, this is executed to generate the `data` argument to
@@ -71,22 +72,20 @@ typedef struct TestResults {
 } TestResults;
 
 
-// The end of an assertion array is an assertion with a null `expr`.
-#define TEST_ASSERTIONS_END { .expr = NULL }
-
-
 // Copies an array of assertions onto the heap.
 TestAssertion * test_assertions_alloc( TestAssertion const * assertions );
 
 
-// Evaluates to an element of a `TestAssertion[]` literal, by
-// stringifying the given expression. The trailing comma separates each
-// element in the literal. The assertion is not identified.
-#define TEST_ASSERTIONS_EL( EXPR ) { .expr = #EXPR, .result = ( EXPR ) },
+// Evaluates to a `TestAssertion` literal with the given expression.
+#define TEST_ASSERTION( EXPR ) { .expr = #EXPR, .result = ( EXPR ) }
 
 
-// Takes a variable number of boolean expressions, and evaluates to a
-// pointer to an array of assertions on the heap, with each assertion
+// The end of an assertion array is an assertion with a null `expr`.
+#define TEST_ASSERTIONS_END { .expr = NULL }
+
+
+// Takes a variable number of boolean expressions, and returns a pointer
+// to an array of assertions on the heap, with each assertion
 // corresponding to a given expression. Note that because this uses
 // `MACROMAP`, this can't take more than 128 arguments, and no argument
 // can begin with more than four parentheses.
@@ -96,18 +95,25 @@ TestAssertion * test_assertions_alloc( TestAssertion const * assertions );
         TEST_ASSERTIONS_END \
     } )
 
+// Prefixes a comma to separate each element of the array.
+#define TEST_ASSERTIONS_EL( EXPR ) TEST_ASSERTION( EXPR ),
 
-// Evaluates to code that checks if the given boolean expression
-// evaluates to false, and if so, causes the containing function to
-// return a pointer to an assertion array on the heap. This array
-// will contain one assertion corresponding to the given expression and
-// identified with the given `ID` argument.
+
+// If the given boolean expression evaluates to false, this causes the
+// containing function to return that expression as an assertion (which
+// will be false), identified with the given `ID` expression if that
+// expression is not a literal "0". This provides an easy way to assert
+// things in a loop.
 #define TEST_REQUIRE( EXPR, ID ) { \
     bool result = ( EXPR ); \
     if ( !result ) { \
+        TestAssertion ta = TEST_ASSERTION( EXPR ); \
+        if ( strcmp( #ID, "0" ) != 0 ) { \
+            ta.id = ID; \
+            ta.id_expr = #ID; \
+        } \
         return test_assertions_alloc( ( TestAssertion[] ){ \
-            { .expr = #EXPR, .result = result, .id_expr = #ID, .id = ID }, \
-            TEST_ASSERTIONS_END \
+            ta, TEST_ASSERTIONS_END \
         } ); \
     } \
 }
@@ -130,19 +136,19 @@ TestAssertion * test_assertions_alloc( TestAssertion const * assertions );
 // Takes a variable number of test function expressions, and evaluates
 // to a `Test[]` literal with each test named as a stringification of
 // its corresponding function expression. Note that because this uses
-// `MACROMAP`, this can't take more than 128 arguments, and no argument
-// can begin with more than 4 nested parentheses.
+// `MACROMAP`, this can't take more than 128 expressions, and no
+// expression can begin with more than 4 nested parentheses.
 #define TESTS( ... ) { MACROMAP( TESTS_EL, __VA_ARGS__ ) TESTS_END }
 
 // Prefixes a comma to separate each element of the array.
 #define TESTS_EL( FUNC ) TEST( FUNC ),
 
 
-// Takes two function expressions to set as the `before` and `after`
-// fields of each of the tests constructed from the subsequent function
-// expressions, similar to `TESTS`. Note that because this uses
-// `MACROMAP3`, this can't take more than 128 arguments, and no argument
-// can begin with more than 4 nested parentheses.
+// Similar to `TESTS`, but also takes two function expressions to set as
+// the `before` and `after` fields of each of the tests constructed
+// expressions. Note that because this uses `MACROMAP3`, this can't take
+// more than 128 expressions, and no argument can begin with more than 4
+// nested parentheses.
 #define TESTS_FIX( BEFORE, AFTER, ... ) \
     { MACROMAP3( TESTS_FIX_EL, BEFORE, AFTER, __VA_ARGS__ ) \
       TESTS_END }
