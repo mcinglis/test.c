@@ -1,5 +1,4 @@
 *.o
-*.d
+*.dep.mk
 *.swp
-*.make
 examples/arithmetic

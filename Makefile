@@ -19,7 +19,7 @@ CPPFLAGS += -I. -I./packages
 objects = test.o
 examples_src = $(wildcard examples/*.c)
 examples_bin = $(basename $(examples_src))
-deprules = $(objects:.o=.d) $(examples_src:.c=.d)
+deprules = $(objects:.o=.dep.mk) $(examples_src:.c=.dep.mk)
 
 
 all: $(objects) $(examples_bin)
@@ -38,8 +38,8 @@ $(examples_bin): $(objects)
 # Have the compiler output dependency files with make targets for each
 # of the object files. The `MT` option specifies the dependency file
 # itself as a target, so that it's regenerated when it should be.
-%.d: %.c
-	$(CC) -MM -MP -MT '$(@:.d=.o) $@' $(CPPFLAGS) $< > $@
+%.dep.mk: %.c
+	$(CC) -MM -MP -MT '$(<:.c=.o) $@' $(CPPFLAGS) $< > $@
 
 # Include each of those dependency files; Make will run the rule above
 # to generate each dependency file (if it needs to).
