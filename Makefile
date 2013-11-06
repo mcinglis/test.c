@@ -4,7 +4,7 @@ CFLAGS += -std=c11 -g -Wall -Wextra -Wpedantic \
           -Wformat=2 -Wno-unused-parameter -Wwrite-strings \
           -Wstrict-prototypes -Wold-style-definition \
           -Wredundant-decls -Wmissing-include-dirs -Wswitch-default \
-          -Wcast-align -Wnested-externs -Wno-missing-field-initializers
+          -Wcast-align -Wnested-externs
 
 ifeq ($(CC),gcc)
     CFLAGS += -Og -fstack-protector-strong -Wjump-misses-init -Wlogical-op
