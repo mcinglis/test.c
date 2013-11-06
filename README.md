@@ -64,7 +64,7 @@ int main( void ) {
 
 The `Test` and `TestAssertion` structs are `typedef`'d with the same name, so using `struct` with them is optional. It's used above as a demonstration, but I usually leave it off.
 
-[`test.h`](/test.h) has the complete interface and documentation. If you want to understand how it's working underneath, run the preprocessor over the examples like `cc -I. -I./packages -E examples/numbers.c`.
+[`test.h`](/test.h) has the complete interface and documentation. There are examples in [`examples/`](/examples/) which are compiled with `make`. If you want to see how it's working underneath, run the preprocessor over an examples like `cc -I. -I./packages -E examples/numbers.c`.
 
 Files that include `test.h` also need to be able to `#include <macromap.h/macromap.h>`, from [Macromap.h](https://github.com/mcinglis/macromap.h). Have a look at [Trie.c](https://github.com/mcinglis/trie.c) for an example of how to manage this (and for an extensive example of using Test.c).
 

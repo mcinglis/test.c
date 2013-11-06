@@ -22,7 +22,7 @@ examples_bin = $(basename $(examples_src))
 deprules = $(objects:.o=.dep.mk) $(examples_src:.c=.dep.mk)
 
 
-all: $(objects) $(examples_bin)
+all: $(objects) examples
 .PHONY: all
 
 
@@ -31,6 +31,9 @@ submodules:
 	git submodule update
 .PHONY: submodules
 
+
+examples: $(examples_bin)
+.PHONY: examples
 
 $(examples_bin): $(objects)
 
