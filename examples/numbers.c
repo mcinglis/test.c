@@ -37,11 +37,19 @@ void after_each( void * const data )
 }
 
 
+struct TestAssertion * addition_works( void * const data )
+{
+    int * const xs = data;
+    xs[ 1 ] = 3;
+    return test_assert( xs[ 1 ] + 8 == 11 );
+}
+
+
 struct TestAssertion * multiplication_works( void * const data )
 {
     int const * const xs = data;
     return test_assert( 2 * 2 == 5,
-                        9 * xs[ 1 ] == 18,
+                        3 * xs[ 1 ] == 6,
                         xs[ 2 ] * 4 != 16 );
 }
 
@@ -56,6 +64,7 @@ struct TestAssertion * some_numbers_dont_exist( void * const data )
 
 
 struct Test const number_tests[] = TESTS_FIX( before_each, after_each,
+    addition_works,
     multiplication_works,
     some_numbers_dont_exist
 );
