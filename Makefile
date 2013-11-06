@@ -22,18 +22,18 @@ examples_bin = $(basename $(examples_src))
 deprules = $(objects:.o=.dep.mk) $(examples_src:.c=.dep.mk)
 
 
-all: $(objects) examples
 .PHONY: all
+all: .submodules.make $(objects) examples
 
-
-submodules:
+# Make submodules only on the first `make all`.
+.submodules.make:
 	git submodule init
 	git submodule update
-.PHONY: submodules
+	@touch $@
 
 
-examples: $(examples_bin)
 .PHONY: examples
+examples: $(examples_bin)
 
 $(examples_bin): $(objects)
 
@@ -49,9 +49,10 @@ $(examples_bin): $(objects)
 -include $(deprules)
 
 
+.PHONY: clean
 clean:
 	-rm -f $(deprules)
 	-rm -f $(objects)
 	-rm -f $(examples_bin)
-.PHONY: clean
+	-rm -f .*.make
 

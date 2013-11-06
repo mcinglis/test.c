@@ -1,5 +1,6 @@
 *.o
 *.dep.mk
-*.swp
+.*.make
+.*.swp
 examples/numbers
 examples/sum
