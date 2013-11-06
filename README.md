@@ -7,30 +7,25 @@ Test.c is a modern, simple testing library for C.
 
 void * before_each( void )
 {
-    int * const x = malloc( sizeof( *x ) );
-    *x = 2;
-    return x;
+    int * const xs = malloc( sizeof( *xs ) * 3 );
+    xs[ 0 ] = 1;
+    xs[ 1 ] = 2;
+    xs[ 2 ] = 4;
+    return xs;
 }
 
 void after_each( void * const data )
 {
-    free( data );
-}
-
-struct TestAssertion * addition_works( void * const data )
-{
-    int * const x = data;
-    *x = 3;
-    return test_assert( *x + *x == 6,
-                        ( 1 + 1 == 3 ) || ( 9 - 3 == 6 ) );
+    int * const xs = data;
+    free( xs );
 }
 
 struct TestAssertion * multiplication_works( void * const data )
 {
-    int const * const x = data;
-    return test_assert( *x * 5 == 5,
-                        9 * *x == 18,
-                        3 * 4 != 12 );
+    int const * const xs = data;
+    return test_assert( 2 * 2 == 5,
+                        9 * xs[ 1 ] == 18,
+                        xs[ 2 ] * 4 != 16 );
 }
 
 struct TestAssertion * some_numbers_dont_exist( void * const data )
@@ -41,22 +36,20 @@ struct TestAssertion * some_numbers_dont_exist( void * const data )
     return NULL;
 }
 
-struct Test const arithmetic_tests[] = TESTS_FIX( before_each, after_each,
-    addition_works,
+struct Test const number_tests[] = TESTS_FIX( before_each, after_each,
     multiplication_works,
     some_numbers_dont_exist
 );
 
 int main( void ) {
-    tests_run( "arithmetic", arithmetic_tests );
-    // Running arithmetic tests...
-    //     pass:  addition_works
+    tests_run( "number", number_tests );
+    // Running number tests...
     //     fail:  multiplication_works
-    //         false:  *x * 5 == 5
-    //         false:  3 * 4 != 12
+    //         false:  2 * 2 == 5
+    //         false:  xs[ 2 ] * 4 != 16
     //     fail:  some_numbers_dont_exist
     //         false for n = 17:  n != 17 && n != 42
-    // Finished arithmetic tests: 1 passed, and 2 failed.
+    // Finished number tests: 0 passed, and 2 failed.
 }
 ```
 

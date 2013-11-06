@@ -1,4 +1,4 @@
-// examples/arithmetic.c
+// examples/numbers.c
 
 // Copyright (C) 2013  Malcolm Inglis
 //
@@ -22,41 +22,31 @@
 
 void * before_each( void )
 {
-    int * const x = malloc( sizeof( *x ) );
-    *x = 2;
-    return x;
+    int * const xs = malloc( sizeof( *xs ) * 3 );
+    xs[ 0 ] = 1;
+    xs[ 1 ] = 2;
+    xs[ 2 ] = 4;
+    return xs;
 }
 
 
 void after_each( void * const data )
 {
-    free( data );
+    int * const xs = data;
+    free( xs );
 }
 
 
-TestAssertion * addition_works( void * const data )
+struct TestAssertion * multiplication_works( void * const data )
 {
-    int * const x = data;
-    *x = 3;
-    return test_assert(
-        *x + *x == 6,
-        ( 1 + 1 == 3 ) || ( 9 - 3 == 6 )
-    );
+    int const * const xs = data;
+    return test_assert( 2 * 2 == 5,
+                        9 * xs[ 1 ] == 18,
+                        xs[ 2 ] * 4 != 16 );
 }
 
 
-TestAssertion * multiplication_works( void * const data )
-{
-    int const * const x = data;
-    return test_assert(
-        *x * 5 == 5,
-        9 * *x == 18,
-        3 * 4 != 12
-    );
-}
-
-
-TestAssertion * some_numbers_dont_exist( void * const data )
+struct TestAssertion * some_numbers_dont_exist( void * const data )
 {
     for ( int n = 0; n < 100; n += 1 ) {
         TEST_REQUIRE( n != 17 && n != 42, n );
@@ -65,14 +55,13 @@ TestAssertion * some_numbers_dont_exist( void * const data )
 }
 
 
-Test const arithmetic_tests[] = TESTS_FIX( before_each, after_each,
-    addition_works,
+struct Test const number_tests[] = TESTS_FIX( before_each, after_each,
     multiplication_works,
     some_numbers_dont_exist
 );
 
 
 int main( void ) {
-    tests_run( "arithmetic", arithmetic_tests );
+    tests_run( "number", number_tests );
 }
 
