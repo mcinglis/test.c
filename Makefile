@@ -13,7 +13,7 @@ ifeq ($(CC),clang)
     CFLAGS += -O0
 endif
 
-CPPFLAGS += -I. -I./packages
+CPPFLAGS += -Wall -I. -I./packages
 
 
 objects = test.o
