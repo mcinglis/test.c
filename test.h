@@ -71,6 +71,12 @@ typedef struct TestResults {
 } TestResults;
 
 
+// Returns true if the two assertions are equal: if they have the same
+// expression, result, and identification. This only considers the
+// logical values: not the memory addresses.
+bool test_assert_eq( TestAssertion, TestAssertion );
+
+
 // The end of an assertion array is an assertion with a null `expr`.
 // These comments refer to an assertion array containing such an element
 // as a "terminated assertion array".

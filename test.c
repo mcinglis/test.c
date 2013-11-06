@@ -28,6 +28,25 @@
 
 
 static
+bool string_eq( char const * const s1, char const * const s2 )
+{
+    return s1 == s2
+        || ( s1 != NULL
+          && s2 != NULL
+          && strcmp( s1, s2 ) == 0 );
+}
+
+
+bool test_assert_eq( TestAssertion const a1, TestAssertion const a2 )
+{
+    return a1.result == a2.result
+        && a1.id == a2.id
+        && string_eq( a1.expr, a2.expr )
+        && string_eq( a1.id_expr, a2.id_expr );
+}
+
+
+static
 size_t test_assertions_size( TestAssertion const * const assertions )
 {
     int len = 0;

@@ -4,7 +4,7 @@ CFLAGS += -std=c11 -g -Wall -Wextra -Wpedantic \
           -Wformat=2 -Wno-unused-parameter -Wwrite-strings \
           -Wstrict-prototypes -Wold-style-definition \
           -Wredundant-decls -Wmissing-include-dirs -Wswitch-default \
-          -Wcast-align -Wnested-externs
+          -Wcast-align -Wnested-externs -Wno-missing-field-initializer
 
 ifeq ($(CC),gcc)
     CFLAGS += -Og -fstack-protector-strong -Wjump-misses-init -Wlogical-op
@@ -54,5 +54,4 @@ clean:
 	-rm -f $(deprules)
 	-rm -f $(objects)
 	-rm -f $(examples_bin)
-	-rm -f .*.make
 
