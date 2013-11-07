@@ -61,6 +61,9 @@ typedef struct Test {
     // modified by `func`.
     void ( *after )( void * data );
 
+    // Invariants:
+    // - `name` is null if and only if `func` is null
+
 } Test;
 
 
@@ -74,7 +77,7 @@ typedef struct TestResults {
 // Returns true if the two assertions are equal: if they have the same
 // expression, result, and identification. This only considers the
 // logical values: not the memory addresses.
-bool test_assert_eq( TestAssertion, TestAssertion );
+bool test_assertion_eq( TestAssertion, TestAssertion );
 
 
 // The end of an assertion array is an assertion with a null `expr`.
@@ -128,6 +131,11 @@ TestAssertion * test_assertions_alloc( TestAssertion const * assertions );
 }
 
 
+// Returns true if the two tests are equal: if they have the same
+// name, and point to the same `func`, `before` and `after` functions.
+bool test_eq( Test, Test );
+
+
 // Evaluates to a `Test` literal with the given test function
 // expression, and named with the stringification of that expression.
 #define TEST( FUNC ) { .func = FUNC, .name = #FUNC }
@@ -142,6 +150,10 @@ TestAssertion * test_assertions_alloc( TestAssertion const * assertions );
 // refer to an test array containing such an element as a "terminated
 // test array".
 #define TESTS_END { .func = NULL }
+
+
+// Returns true if the given test is equal to `TESTS_END`.
+bool test_is_end( Test );
 
 
 // Evaluates to a literal terminated array of tests corresponding to

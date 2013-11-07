@@ -37,7 +37,7 @@ bool string_eq( char const * const s1, char const * const s2 )
 }
 
 
-bool test_assert_eq( TestAssertion const a1, TestAssertion const a2 )
+bool test_assertion_eq( TestAssertion const a1, TestAssertion const a2 )
 {
     return a1.result == a2.result
         && a1.id == a2.id
@@ -53,7 +53,7 @@ size_t test_assertions_size( TestAssertion const * const assertions )
     for ( int i = 0; assertions[ i ].expr != NULL; i += 1 ) {
         len += 1;
     }
-    return len;
+    return len + 1;
 }
 
 
@@ -64,6 +64,15 @@ TestAssertion * test_assertions_alloc( TestAssertion const * const assertions )
     TestAssertion * const copy = malloc( nbytes );
     memcpy( copy, assertions, nbytes );
     return copy;
+}
+
+
+bool test_eq( Test const t1, Test const t2 )
+{
+    return t1.func == t2.func
+        && t1.before == t2.before
+        && t1.after == t2.after
+        && string_eq( t1.name, t2.name );
 }
 
 
@@ -82,13 +91,14 @@ TestAssertion * test_gen_assertions( Test const test )
 static
 bool test_run( Test const test )
 {
-    assert( test.func != NULL );
+    assert( test.func != NULL && test.name != NULL );
     TestAssertion * const assertions = test_gen_assertions( test );
     bool pass = true;
     if ( assertions != NULL ) {
         for ( int i = 0; assertions[ i ].expr != NULL; i += 1 ) {
             TestAssertion const a = assertions[ i ];
             if ( a.result == false ) {
+                // If this is the first false assertion we've seen:
                 if ( pass == true ) {
                     printf( INDENT "fail:  %s\n", test.name );
                 }

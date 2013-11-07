@@ -4,7 +4,7 @@ CFLAGS += -std=c11 -g -Wall -Wextra -Wpedantic \
           -Wformat=2 -Wno-unused-parameter -Wwrite-strings \
           -Wstrict-prototypes -Wold-style-definition \
           -Wredundant-decls -Wmissing-include-dirs -Wswitch-default \
-          -Wcast-align -Wnested-externs -Wno-missing-field-initializer
+          -Wcast-align -Wnested-externs -Wno-missing-field-initializers
 
 ifeq ($(CC),gcc)
     CFLAGS += -Og -fstack-protector-strong -Wjump-misses-init -Wlogical-op
@@ -17,13 +17,21 @@ CPPFLAGS += -Wall -I. -I./packages
 
 
 objects = test.o
+
+tests_src = $(wildcard tests/*.c)
+tests_obj = $(tests_src:.c=.o)
+tests_bin = tests/main
+
 examples_src = $(wildcard examples/*.c)
 examples_bin = $(basename $(examples_src))
-deprules = $(objects:.o=.dep.mk) $(examples_src:.c=.dep.mk)
+
+deprules = $(objects:.o=.dep.mk) \
+	   $(tests_src:.c=.dep.mk) \
+	   $(examples_src:.c=.dep.mk)
 
 
 .PHONY: all
-all: .submodules.make $(objects) examples
+all: .submodules.make $(objects) examples tests
 
 # Make submodules only on the first `make all`.
 .submodules.make:
@@ -32,9 +40,16 @@ all: .submodules.make $(objects) examples
 	@touch $@
 
 
+# `tests` builds the tests, and `test` runs the tests.
+.PHONY: test tests
+test: tests
+	./tests/main
+tests: $(tests_bin)
+$(tests_bin): $(tests_obj) $(objects)
+
+
 .PHONY: examples
 examples: $(examples_bin)
-
 $(examples_bin): $(objects)
 
 
@@ -49,9 +64,12 @@ $(examples_bin): $(objects)
 -include $(deprules)
 
 
-.PHONY: clean
-clean:
+.PHONY: clean clean-dep clean-obj clean-bin
+clean: clean-dep clean-obj clean-bin
+clean-dep:
 	-rm -f $(deprules)
-	-rm -f $(objects)
-	-rm -f $(examples_bin)
+clean-obj:
+	-rm -f $(deprules:.d=.o)
+clean-bin:
+	-rm -f $(tests_bin) $(examples_bin)
 
