@@ -37,8 +37,7 @@ struct TestAssertion * xs_is_increasing( void * const data )
 {
     int const * const xs = data;
     for ( int i = 0; i < 4; i += 1 ) {
-        TEST_REQUIRE( xs[ i ] <= xs[ i + 1 ],
-                      i, xs[ i ], xs[ i + 1 ] );
+        TEST_REQUIRE( xs[ i ] <= xs[ i + 1 ], i, xs[ i ], xs[ i + 1 ] );
     }
     return NULL;
 }
@@ -51,16 +50,15 @@ struct Test const number_tests[] = TESTS_FIX( before_each, after_each,
 
 int main( void ) {
     tests_run( "number", number_tests );
-// Running number tests...
-//     pass:  addition_works
-//     fail:  multiplication_works
-//         false:  2 * 2 == 5
-//         false:  xs[ 1 ] * 4 != 16
-//     fail:  xs_is_increasing
-//         false:  xs[ i ] <= xs[ i + 1 ]
-//             (for i = 2, xs[ i ] = 8, xs[ i + 1 ] = 5)
-// Finished number tests: 1 passed, and 2 failed.
-
+    // Running number tests...
+    //     pass:  addition_works
+    //     fail:  multiplication_works
+    //         false:  2 * 2 == 5
+    //         false:  xs[ 1 ] * 4 != 16
+    //     fail:  xs_is_increasing
+    //         false:  xs[ i ] <= xs[ i + 1 ]
+    //             (for i = 2, xs[ i ] = 8, xs[ i + 1 ] = 5)
+    // Finished number tests: 1 passed, and 2 failed.
 }
 ```
 
@@ -91,7 +89,7 @@ $ CC=clang make
 $ CFLAGS='-std=c99' make
 ```
 
-You'll have to run `git submodule update` after pulling a commit that updates a submodule.
+You'll have to run `git submodule update` after pulling a commit that updates a submodule (this should be pretty rare).
 
 
 ## License
