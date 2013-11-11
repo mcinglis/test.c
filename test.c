@@ -73,7 +73,7 @@ bool test_run( Test const test, FILE * file, char const * const indent )
                     fprintf( file, "fail:  %s\n", test.name );
                 }
                 fprintf( file, "%s%s", indent, indent );
-                test_assertion_print( file, as[ i ] );
+                test_assertion_print( as[ i ], file, indent );
                 pass = false;
             }
         }

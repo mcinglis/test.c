@@ -25,7 +25,9 @@
 #include <stdio.h>
 
 
-void test_assertion_print( FILE * file, TestAssertion const a );
+void test_assertion_print( TestAssertion const a,
+                           FILE * const file,
+                           char const * indent );
 
 
 void test_assertions_free( TestAssertion * const as );

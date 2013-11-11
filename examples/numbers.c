@@ -16,17 +16,19 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-#include "test.h"
+#include <stdlib.h>
+#include <string.h>
+
+#include <test.h>
 // Test, TestAssertion, test_assert, TEST_REQUIRE, tests_run
 
 
 void * before_each( void )
 {
-    int * const xs = malloc( sizeof( *xs ) * 3 );
-    xs[ 0 ] = 1;
-    xs[ 1 ] = 2;
-    xs[ 2 ] = 4;
-    return xs;
+    int const xs[] = { 2, 4, 8, 5 };
+    int * const mem = malloc( sizeof( xs ) );
+    memcpy( mem, xs, sizeof( xs ) );
+    return mem;
 }
 
 
@@ -39,25 +41,26 @@ void after_each( void * const data )
 
 struct TestAssertion * addition_works( void * const data )
 {
-    int * const xs = data;
-    xs[ 1 ] = 3;
-    return test_assert( xs[ 1 ] + 8 == 11 );
+    return test_assert( 3 + 8 == 11 );
 }
 
 
 struct TestAssertion * multiplication_works( void * const data )
 {
-    int const * const xs = data;
+    int * const xs = data;
+    xs[ 2 ] = 3;
     return test_assert( 2 * 2 == 5,
-                        3 * xs[ 1 ] == 6,
-                        xs[ 2 ] * 4 != 16 );
+                        3 * xs[ 2 ] == 9,
+                        xs[ 1 ] * 4 != 16 );
 }
 
 
-struct TestAssertion * some_numbers_dont_exist( void * const data )
+struct TestAssertion * xs_is_increasing( void * const data )
 {
-    for ( int n = 0; n < 100; n += 1 ) {
-        TEST_REQUIRE( n != 17 && n != 42, n );
+    int const * const xs = data;
+    for ( int i = 0; i < 4; i += 1 ) {
+        TEST_REQUIRE( xs[ i ] <= xs[ i + 1 ],
+                      i, xs[ i ], xs[ i + 1 ] );
     }
     return NULL;
 }
@@ -66,7 +69,7 @@ struct TestAssertion * some_numbers_dont_exist( void * const data )
 struct Test const number_tests[] = TESTS_FIX( before_each, after_each,
     addition_works,
     multiplication_works,
-    some_numbers_dont_exist
+    xs_is_increasing
 );
 
 

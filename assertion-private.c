@@ -23,14 +23,24 @@
 #include <stdio.h>
 
 
-void test_assertion_print( FILE * file, TestAssertion const a )
+void test_assertion_print( TestAssertion const a,
+                           FILE * const file,
+                           char const * indent )
 {
     fprintf( file, ( a.result == true ) ? "true" : "false" );
-    for ( size_t i = 0; i < a.num_ids; i += 1 ) {
-        fprintf( file, ( i == 0 ) ? " for " : ", " );
-        fprintf( file, "%s = %d", a.ids[ i ].expr, a.ids[ i ].value );
+    fprintf( file, ":  %s", a.expr );
+    if ( a.num_ids > 0 ) {
+        fprintf( file, "\n%s%s%s(for ", indent, indent, indent );
+        for ( size_t i = 0; i < a.num_ids; i += 1 ) {
+            if ( i != 0 ) {
+                fprintf( file, ", " );
+            }
+            TestAssertionId const id = a.ids[ i ];
+            fprintf( file, "%s = %d", id.expr, id.value );
+        }
+        fprintf( file, ")" );
     }
-    fprintf( file, ":  %s\n", a.expr );
+    fprintf( file, "\n" );
 }
 
 
