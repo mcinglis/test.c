@@ -25,7 +25,7 @@
 
 void * before_each( void )
 {
-    int const xs[] = { 2, 4, 8, 5 };
+    int const xs[] = { 2, 4, 8, 5, 3 };
     int * const mem = malloc( sizeof( xs ) );
     memcpy( mem, xs, sizeof( xs ) );
     return mem;

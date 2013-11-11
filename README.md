@@ -7,7 +7,7 @@ Test.c is a modern, simple testing library for C.
 
 void * before_each( void )
 {
-    int const xs[] = { 2, 4, 8, 5 };
+    int const xs[] = { 2, 4, 8, 5, 3 };
     int * const mem = malloc( sizeof( xs ) );
     memcpy( mem, xs, sizeof( xs ) );
     return mem;
@@ -64,7 +64,7 @@ int main( void ) {
 
 The `Test` and `TestAssertion` structs are `typedef`'d with the same name, so using `struct` with them is optional. I usually leave it off.
 
-[`test.h`](/test.h) has the complete ("public") interface and documentation. There are examples in [`examples/`](/examples/) which are compiled with `make`. I heard you like tests, so Test.c's [tests](/tests/) are written with Test.c. You can read those for an extensive example of using Test.c, and to see its particular behaviors.
+[`test.h`](/test.h) has the complete public interface and documentation. There are examples in [`examples/`](/examples/) which are compiled with `make`. I heard you like tests, so Test.c's [tests](/tests/) are written with Test.c. You can read those for an extensive example of using Test.c, and to see its particular behaviors.
 
 Files that include `test.h` need to be able to `#include <macromap.h/macromap.h>`, from [Macromap.h](https://github.com/mcinglis/macromap.h). Have a look at [Trie.c](https://github.com/mcinglis/trie.c) for an example of how to manage this (and for another example of using Test.c).
 
