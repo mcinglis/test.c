@@ -62,8 +62,9 @@ typedef struct TestAssertion {
 } TestAssertion;
 
 
-// Evaluates to a literal `TestId` with the given integer expression.
-#define TEST_ID( EXPR ) { .expr = #EXPR, .value = EXPR }
+// Evaluates to a literal `TestAssertionId` with the given integer
+// expression.
+#define TEST_ASSERTION_ID( EXPR ) { .expr = #EXPR, .value = EXPR }
 
 
 // Evaluates to a literal `TestAssertion` with the given boolean
@@ -133,8 +134,9 @@ TestAssertion * test_assertions_alloc( TestAssertion const * assertions );
     { \
         bool result = ( EXPR ); \
         if ( !result ) { \
-            TestAssertionId ids[] = { MACROMAP( TEST_IDS_EL, __VA_ARGS__ ) \
-                                      { 0 } }; \
+            TestAssertionId ids[] = { \
+                MACROMAP( TEST_ASSERTION_IDS_EL, __VA_ARGS__ ) { 0 } \
+            }; \
             return test_assertions_alloc( ( TestAssertion[] ){ \
                 { .expr = #EXPR, \
                   .result = result, \
@@ -144,7 +146,7 @@ TestAssertion * test_assertions_alloc( TestAssertion const * assertions );
             } ); \
         } \
     }
-#define TEST_IDS_EL( EXPR ) TEST_ID( EXPR ),
+#define TEST_ASSERTION_IDS_EL( EXPR ) TEST_ASSERTION_ID( EXPR ),
 
 // There is trailing zeroed literal in the initialization of `ids`
 // because `MACROMAP` will evaluate to an expression with a trailing
