@@ -1,4 +1,4 @@
-// tests/main.c
+// assertion-private.h
 
 // Copyright (C) 2013  Malcolm Inglis <http://minglis.id.au/>
 //
@@ -16,18 +16,20 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-#include <test.h>       // Test, tests_return_val, tests_run
+#ifndef INCLUDED_TESTC_ASSERTION_PRIVATE_H
+#define INCLUDED_TESTC_ASSERTION_PRIVATE_H
 
 
-extern Test const assertion_tests[];
-extern Test const test_tests[];
+#include "assertion.h" // TestAssertion
+
+#include <stdio.h>
 
 
-int main( void )
-{
-    return tests_return_val(
-        tests_run( "assertion", assertion_tests ),
-        tests_run( "test", test_tests )
-    );
-}
+void test_assertion_print( FILE * file, TestAssertion const a );
+
+
+void test_assertions_free( TestAssertion * const as );
+
+
+#endif // ifndef INCLUDED_TESTC_ASSERTION_PRIVATE_H
 

@@ -4,3 +4,4 @@
 .*.swp
 examples/numbers
 examples/sum
+tests/main

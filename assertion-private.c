@@ -1,4 +1,4 @@
-// tests/main.c
+// assertion-private.c
 
 // Copyright (C) 2013  Malcolm Inglis <http://minglis.id.au/>
 //
@@ -16,18 +16,29 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-#include <test.h>       // Test, tests_return_val, tests_run
+#include "assertion.h" // TestAssertion
+#include "assertion-private.h"
+
+#include <stdlib.h>
+#include <stdio.h>
 
 
-extern Test const assertion_tests[];
-extern Test const test_tests[];
-
-
-int main( void )
+void test_assertion_print( FILE * file, TestAssertion const a )
 {
-    return tests_return_val(
-        tests_run( "assertion", assertion_tests ),
-        tests_run( "test", test_tests )
-    );
+    fprintf( file, ( a.result == true ) ? "true" : "false" );
+    for ( size_t i = 0; i < a.num_ids; i += 1 ) {
+        fprintf( file, ( i == 0 ) ? " for " : ", " );
+        fprintf( file, "%s = %d", a.ids[ i ].expr, a.ids[ i ].value );
+    }
+    fprintf( file, ":  %s\n", a.expr );
+}
+
+
+void test_assertions_free( TestAssertion * const as )
+{
+    for ( size_t i = 0; !test_assertion_is_end( as[ i ] ); i += 1 ) {
+        free( as[ i ].ids );
+    }
+    free( as );
 }
 

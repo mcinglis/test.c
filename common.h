@@ -1,4 +1,5 @@
-// tests/main.c
+// common.h
+// Functions used throughout Test.c.
 
 // Copyright (C) 2013  Malcolm Inglis <http://minglis.id.au/>
 //
@@ -16,18 +17,15 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-#include <test.h>       // Test, tests_return_val, tests_run
+#ifndef INCLUDED_TESTC_COMMON_H
+#define INCLUDED_TESTC_COMMON_H
+
+#include <stdbool.h>
 
 
-extern Test const assertion_tests[];
-extern Test const test_tests[];
+// Returns true if both of the given pointers point to the same array,
+// or are both null, or if `strcmp( s1, s2 ) == 0`.
+bool string_eq( char const * const s1, char const * const s2 );
 
 
-int main( void )
-{
-    return tests_return_val(
-        tests_run( "assertion", assertion_tests ),
-        tests_run( "test", test_tests )
-    );
-}
-
+#endif // ifndef INCLUDED_TESTC_COMMON_H

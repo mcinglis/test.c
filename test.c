@@ -23,48 +23,8 @@
 #include <string.h>
 #include <assert.h>
 
-
-#define INDENT "    "
-
-
-static
-bool string_eq( char const * const s1, char const * const s2 )
-{
-    return s1 == s2
-        || ( s1 != NULL
-          && s2 != NULL
-          && strcmp( s1, s2 ) == 0 );
-}
-
-
-bool test_assertion_eq( TestAssertion const a1, TestAssertion const a2 )
-{
-    return a1.result == a2.result
-        && a1.id == a2.id
-        && string_eq( a1.expr, a2.expr )
-        && string_eq( a1.id_expr, a2.id_expr );
-}
-
-
-static
-size_t test_assertions_size( TestAssertion const * const assertions )
-{
-    int len = 0;
-    for ( int i = 0; assertions[ i ].expr != NULL; i += 1 ) {
-        len += 1;
-    }
-    return len + 1;
-}
-
-
-TestAssertion * test_assertions_alloc( TestAssertion const * const assertions )
-{
-    size_t const nbytes = test_assertions_size( assertions )
-                          * sizeof( TestAssertion );
-    TestAssertion * const copy = malloc( nbytes );
-    memcpy( copy, assertions, nbytes );
-    return copy;
-}
+#include "common.h"
+#include "assertion-private.h"
 
 
 bool test_eq( Test const t1, Test const t2 )
@@ -73,6 +33,12 @@ bool test_eq( Test const t1, Test const t2 )
         && t1.before == t2.before
         && t1.after == t2.after
         && string_eq( t1.name, t2.name );
+}
+
+
+bool test_is_end( Test const t )
+{
+    return test_eq( t, ( Test ) TESTS_END );
 }
 
 
@@ -89,51 +55,72 @@ TestAssertion * test_gen_assertions( Test const test )
 
 
 static
-bool test_run( Test const test )
+bool test_run( Test const test, FILE * file, char const * const indent )
 {
-    assert( test.func != NULL && test.name != NULL );
-    TestAssertion * const assertions = test_gen_assertions( test );
+    assert( file != NULL );
+    assert( test.func != NULL );
+    assert( indent != NULL );
+
     bool pass = true;
-    if ( assertions != NULL ) {
-        for ( int i = 0; assertions[ i ].expr != NULL; i += 1 ) {
-            TestAssertion const a = assertions[ i ];
-            if ( a.result == false ) {
-                // If this is the first false assertion we've seen:
+    TestAssertion * const as = test_gen_assertions( test );
+    if ( as != NULL ) {
+        for ( size_t i = 0; !test_assertion_is_end( as[ i ] ); i += 1 ) {
+            if ( as[ i ].result == false ) {
+                // If this is the first false assertion we've seen,
+                // print a line saying that the test has failed.
                 if ( pass == true ) {
-                    printf( INDENT "fail:  %s\n", test.name );
+                    fprintf( file, "%s", indent );
+                    fprintf( file, "fail:  %s\n", test.name );
                 }
-                printf( INDENT INDENT "false" );
-                if ( a.id_expr != NULL ) {
-                    printf( " for %s = %d", a.id_expr, a.id );
-                }
-                printf( ":  %s\n", a.expr );
+                fprintf( file, "%s%s", indent, indent );
+                test_assertion_print( file, as[ i ] );
                 pass = false;
             }
         }
-        free( assertions );
+        test_assertions_free( as );
     }
     if ( pass == true ) {
-        printf( INDENT "pass:  %s\n", test.name );
+        fprintf( file, "%s", indent );
+        fprintf( file, "pass:  %s\n", test.name );
     }
     return pass;
 }
 
 
-TestResults tests_run( char const * const name,
-                       Test const * const tests )
+TestResults tests_run_( struct tests_run_options o )
 {
-    printf( "Running %s tests...\n", name );
+    assert( o.name != NULL );
+    assert( o.tests != NULL );
+    if ( o.file == NULL ) {
+        o.file = stdout;
+    }
+
+    fprintf( o.file, "Running %s tests...\n", o.name );
     TestResults results = { .passed = 0, .failed = 0 };
-    for ( int i = 0; tests[ i ].func != NULL; i += 1 ) {
-        bool passed = test_run( tests[ i ] );
+    for ( size_t i = 0; !test_is_end( o.tests[ i ] ); i += 1 ) {
+        bool passed = test_run( o.tests[ i ], o.file, "    " );
         if ( passed ) {
             results.passed += 1;
         } else {
             results.failed += 1;
         }
     }
-    printf( "Finished %s tests: %d passed, and %d failed.\n",
-            name, results.passed, results.failed );
+    fprintf( o.file, "Finished %s tests: %d passed, and %d failed.\n",
+             o.name, results.passed, results.failed );
     return results;
+}
+
+
+int tests_return_val_( TestResults const * rs )
+{
+    assert( rs != NULL );
+
+    // `{ .failed = -1 }` is the terminating value.
+    for ( size_t i = 0; rs[ i ].failed != -1; i += 1 ) {
+        if ( rs[ i ].failed > 0 ) {
+            return 1;
+        }
+    }
+    return 0;
 }
 

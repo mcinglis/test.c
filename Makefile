@@ -16,7 +16,7 @@ endif
 CPPFLAGS += -Wall -I. -I./packages
 
 
-objects = test.o
+objects = common.o assertion.o assertion-private.o test.o
 
 tests_src = $(wildcard tests/*.c)
 tests_obj = $(tests_src:.c=.o)
@@ -69,7 +69,7 @@ clean: clean-dep clean-obj clean-bin
 clean-dep:
 	-rm -f $(deprules)
 clean-obj:
-	-rm -f $(deprules:.d=.o)
+	-rm -f $(deprules:.dep.mk=.o)
 clean-bin:
 	-rm -f $(tests_bin) $(examples_bin)
 

@@ -1,4 +1,4 @@
-// tests/main.c
+// tests/common.h
 
 // Copyright (C) 2013  Malcolm Inglis <http://minglis.id.au/>
 //
@@ -16,18 +16,5 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-#include <test.h>       // Test, tests_return_val, tests_run
-
-
-extern Test const assertion_tests[];
-extern Test const test_tests[];
-
-
-int main( void )
-{
-    return tests_return_val(
-        tests_run( "assertion", assertion_tests ),
-        tests_run( "test", test_tests )
-    );
-}
+#define NELEM( XS ) ( ( sizeof XS ) / ( sizeof XS[ 0 ] ) )
 

@@ -1,4 +1,4 @@
-// tests/main.c
+// common.c
 
 // Copyright (C) 2013  Malcolm Inglis <http://minglis.id.au/>
 //
@@ -16,18 +16,16 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-#include <test.h>       // Test, tests_return_val, tests_run
+#include "common.h"
+
+#include <string.h>
 
 
-extern Test const assertion_tests[];
-extern Test const test_tests[];
-
-
-int main( void )
+bool string_eq( char const * const s1, char const * const s2 )
 {
-    return tests_return_val(
-        tests_run( "assertion", assertion_tests ),
-        tests_run( "test", test_tests )
-    );
+    return s1 == s2
+        || ( s1 != NULL
+          && s2 != NULL
+          && strcmp( s1, s2 ) == 0 );
 }
 
