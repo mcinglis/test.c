@@ -1,4 +1,5 @@
-// common.c
+// _common.h
+// Functions used throughout Test.c.
 
 // Copyright (C) 2013  Malcolm Inglis <http://minglis.id.au/>
 //
@@ -16,16 +17,17 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-#include "common.h"
+#ifndef INCLUDED_TESTC__COMMON_H
+#define INCLUDED_TESTC__COMMON_H
 
-#include <string.h>
+
+#include <stdbool.h>
 
 
-bool string_eq( char const * const s1, char const * const s2 )
-{
-    return s1 == s2
-        || ( s1 != NULL
-          && s2 != NULL
-          && strcmp( s1, s2 ) == 0 );
-}
+// Returns true if both of the given pointers point to the same array,
+// or are both null, or if `strcmp( s1, s2 ) == 0`.
+bool string_eq( char const * const s1, char const * const s2 );
+
+
+#endif // ifndef INCLUDED_TESTC__COMMON_H
 

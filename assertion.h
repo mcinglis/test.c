@@ -57,7 +57,7 @@ typedef struct TestAssertion {
 
     // Invariants:
     // - if `ids` is `NULL`, `num_ids` is `0`
-    // - if `ids` has at least as many elements as `num_ids`
+    // - `ids` has at least as many elements as `num_ids`
 
 } TestAssertion;
 
@@ -103,6 +103,11 @@ bool test_assertion_is_end( TestAssertion );
 // non-zero `num_ids` fields will have their `ids` arrays copied into
 // allocated memory for as many elements as `num_ids`.
 TestAssertion * test_assertions_alloc( TestAssertion const * assertions );
+
+
+// Frees the memory allocated for each assertion's identifications
+// array, and the memory allocated for the assertion itself.
+void test_assertions_free( TestAssertion * const assertions );
 
 
 // Returns an allocated, terminated assertion array corresponding to the

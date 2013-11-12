@@ -21,7 +21,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "common.h" // string_eq
+#include "_common.h" // string_eq
 
 
 static
@@ -102,5 +102,14 @@ TestAssertion * test_assertions_alloc( TestAssertion const * const as )
         }
     }
     return alloc;
+}
+
+
+void test_assertions_free( TestAssertion * const as )
+{
+    for ( size_t i = 0; !test_assertion_is_end( as[ i ] ); i += 1 ) {
+        free( as[ i ].ids );
+    }
+    free( as );
 }
 

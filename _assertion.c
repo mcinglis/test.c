@@ -16,23 +16,25 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-#include "assertion.h" // TestAssertion
-#include "assertion-private.h"
+#include "_assertion.h"
 
 #include <stdlib.h>
 #include <stdio.h>
+
+#include "assertion.h"
+// TestAssertion, TestAssertionId, test_assertion_is_end
 
 
 void test_assertion_print( TestAssertion const a,
                            FILE * const file,
                            char const * indent )
 {
-    fprintf( file, ( a.result == true ) ? "true" : "false" );
-    fprintf( file, ":  %s", a.expr );
+    fprintf( file, "%s:  %s", ( a.result == true ) ? "true" : "false",
+                              a.expr );
     if ( a.num_ids > 0 ) {
         fprintf( file, "\n%s%s%s(for ", indent, indent, indent );
         for ( size_t i = 0; i < a.num_ids; i += 1 ) {
-            if ( i != 0 ) {
+            if ( i > 0 ) {
                 fprintf( file, ", " );
             }
             TestAssertionId const id = a.ids[ i ];
@@ -43,12 +45,4 @@ void test_assertion_print( TestAssertion const a,
     fprintf( file, "\n" );
 }
 
-
-void test_assertions_free( TestAssertion * const as )
-{
-    for ( size_t i = 0; !test_assertion_is_end( as[ i ] ); i += 1 ) {
-        free( as[ i ].ids );
-    }
-    free( as );
-}
 

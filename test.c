@@ -16,15 +16,17 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-#include "test.h"       // Test, TestAssertion, TestResults
+#include "test.h" // Test, TestResults
 
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
 
-#include "common.h"
-#include "assertion-private.h"
+#include "assertion.h"
+// TestAssertion, test_assertion_is_end, test_assertions_free
+#include "_assertion.h" // test_assertion_print
+#include "_common.h" // string_eq
 
 
 bool test_eq( Test const t1, Test const t2 )
@@ -45,6 +47,8 @@ bool test_is_end( Test const t )
 static
 TestAssertion * test_gen_assertions( Test const test )
 {
+    assert( test.func != NULL );
+
     void * const data = ( test.before == NULL ) ? NULL : test.before();
     TestAssertion * const assertions = test.func( data );
     if ( test.after != NULL ) {
@@ -73,6 +77,9 @@ bool test_run( Test const test, FILE * file, char const * const indent )
                     fprintf( file, "fail:  %s\n", test.name );
                 }
                 fprintf( file, "%s%s", indent, indent );
+                // TODO: work out how to build the indent here so that
+                // `test_assertion_print` doesn't need to "multiply" the
+                // indent manually.
                 test_assertion_print( as[ i ], file, indent );
                 pass = false;
             }
