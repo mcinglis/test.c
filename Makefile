@@ -24,7 +24,7 @@ examples_bin = $(basename $(examples_src))
 # Preprocessor and compiler flags
 # -----
 
-CPPFLAGS += -I. -I./packages
+CPPFLAGS += -I. -I./submodules
 
 CFLAGS += -std=c11 -g -Wall -Wextra -Wpedantic \
           -Wshadow -Wcast-qual -Wcast-align \
