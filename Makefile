@@ -1,4 +1,31 @@
 
+# -----
+# Variables
+# -----
+
+dep_ext = .dep.mk
+
+src = $(wildcard *.c)
+obj = $(src:.c=.o)
+dep = $(obj:.o=$(dep_ext))
+
+tests_src = $(wildcard tests/*.c)
+tests_obj = $(tests_src:.c=.o)
+tests_dep = $(tests_obj:.o=$(dep_ext))
+tests_main = tests/main
+
+examples_src = $(wildcard examples/*.c)
+examples_obj = $(examples_src:.c=.o)
+examples_dep = $(examples_obj:.o=$(dep_ext))
+examples_bin = $(basename $(examples_src))
+
+
+# -----
+# Preprocessor and compiler flags
+# -----
+
+CPPFLAGS += -I. -I./packages
+
 CFLAGS += -std=c11 -g -Wall -Wextra -Wpedantic \
           -Wshadow -Wcast-qual -Wcast-align \
           -Wformat=2 -Wno-unused-parameter -Wwrite-strings \
@@ -13,63 +40,45 @@ ifeq ($(CC),clang)
     CFLAGS += -O0
 endif
 
-CPPFLAGS += -Wall -I. -I./packages
 
-
-objects = common.o assertion.o assertion-private.o test.o
-
-tests_src = $(wildcard tests/*.c)
-tests_obj = $(tests_src:.c=.o)
-tests_bin = tests/main
-
-examples_src = $(wildcard examples/*.c)
-examples_bin = $(basename $(examples_src))
-
-deprules = $(objects:.o=.dep.mk) \
-	   $(tests_src:.c=.dep.mk) \
-	   $(examples_src:.c=.dep.mk)
-
+# -----
+# Targets
+# -----
 
 .PHONY: all
-all: .submodules.make $(objects) examples tests
+all: $(obj) tests examples
 
-# Make submodules only on the first `make all`.
-.submodules.make:
-	git submodule init
-	git submodule update
-	@touch $@
+.PHONY: tests
+tests: $(tests_main)
+$(tests_main): $(tests_obj) $(obj)
 
-
-# `tests` builds the tests, and `test` runs the tests.
-.PHONY: test tests
-test: tests
-	./tests/main
-tests: $(tests_bin)
-$(tests_bin): $(tests_obj) $(objects)
-
+.PHONY: test
+test: $(tests_main)
+	@./$(tests_main)
 
 .PHONY: examples
 examples: $(examples_bin)
-$(examples_bin): $(objects)
+$(examples_bin): $(obj)
 
+.PHONY: clean
+clean:
+	-rm -f $(dep) $(obj)
+	-rm -f $(tests_dep) $(tests_obj) $(tests_main)
+	-rm -f $(examples_dep) $(examples_obj) $(examples_bin)
+
+
+# -----
+# Automatic dependencies
+# -----
 
 # Have the compiler output dependency files with make targets for each
 # of the object files. The `MT` option specifies the dependency file
 # itself as a target, so that it's regenerated when it should be.
-%.dep.mk: %.c
-	$(CC) -MM -MP -MT '$(<:.c=.o) $@' $(CPPFLAGS) $< > $@
+%$(dep_ext): %.c
+	$(CC) $(CPPFLAGS) -MM -MP -MT '$(@:$(dep_ext)=.o) $@' $< > $@
 
 # Include each of those dependency files; Make will run the rule above
 # to generate each dependency file (if it needs to).
--include $(deprules)
+-include $(dep) $(tests_dep) $(examples_dep)
 
-
-.PHONY: clean clean-dep clean-obj clean-bin
-clean: clean-dep clean-obj clean-bin
-clean-dep:
-	-rm -f $(deprules)
-clean-obj:
-	-rm -f $(deprules:.dep.mk=.o)
-clean-bin:
-	-rm -f $(tests_bin) $(examples_bin)
 
