@@ -106,7 +106,7 @@ TestAssertion * test_assertions_alloc( TestAssertion const * assertions );
 
 
 // Frees the memory allocated for each assertion's identifications
-// array, and the memory allocated for the assertion itself.
+// array, and the memory allocated for the assertion array itself.
 void test_assertions_free( TestAssertion * const assertions );
 
 

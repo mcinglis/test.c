@@ -30,8 +30,5 @@ void test_assertion_print( TestAssertion const a,
                            char const * indent );
 
 
-void test_assertions_free( TestAssertion * const as );
-
-
 #endif // ifndef INCLUDED_TESTC__ASSERTION_H
 
