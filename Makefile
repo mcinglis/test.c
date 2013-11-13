@@ -3,11 +3,10 @@
 # Variables
 # -----
 
+testc = .
 dep_ext = .dep.mk
 
-src = $(wildcard *.c)
-obj = $(src:.c=.o)
-dep = $(obj:.o=$(dep_ext))
+include Module.mk
 
 tests_src = $(wildcard tests/*.c)
 tests_obj = $(tests_src:.c=.o)
@@ -24,7 +23,8 @@ examples_bin = $(basename $(examples_src))
 # Preprocessor and compiler flags
 # -----
 
-CPPFLAGS += -I. -I./submodules
+# For the tests and examples:
+CPPFLAGS += -I.
 
 CFLAGS += -std=c11 -g -Wall -Wextra -Wpedantic \
           -Wshadow -Wcast-qual -Wcast-align \
@@ -34,7 +34,7 @@ CFLAGS += -std=c11 -g -Wall -Wextra -Wpedantic \
           -Wcast-align -Wnested-externs -Wno-missing-field-initializers
 
 ifeq ($(CC),gcc)
-    CFLAGS += -Og -Wjump-misses-init -Wlogical-op
+    CFLAGS += -Og -fstack-protector-strong -Wjump-misses-init -Wlogical-op
 endif
 ifeq ($(CC),clang)
     CFLAGS += -O0
@@ -46,11 +46,11 @@ endif
 # -----
 
 .PHONY: all
-all: $(obj) tests examples
+all: $(testc_obj) tests examples
 
 .PHONY: tests
 tests: $(tests_main)
-$(tests_main): $(tests_obj) $(obj)
+$(tests_main): $(tests_obj) $(testc_obj)
 
 .PHONY: test
 test: $(tests_main)
@@ -58,11 +58,11 @@ test: $(tests_main)
 
 .PHONY: examples
 examples: $(examples_bin)
-$(examples_bin): $(obj)
+$(examples_bin): $(testc_obj)
 
 .PHONY: clean
 clean:
-	-rm -f $(dep) $(obj)
+	-rm -f $(testc_dep) $(testc_obj)
 	-rm -f $(tests_dep) $(tests_obj) $(tests_main)
 	-rm -f $(examples_dep) $(examples_obj) $(examples_bin)
 
@@ -79,6 +79,5 @@ clean:
 
 # Include each of those dependency files; Make will run the rule above
 # to generate each dependency file (if it needs to).
--include $(dep) $(tests_dep) $(examples_dep)
-
+-include $(testc_dep) $(tests_dep) $(examples_dep)
 

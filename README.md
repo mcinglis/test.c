@@ -61,9 +61,9 @@ int main( void ) {
 
 The `Test` and `TestAssertion` structs are typedef'd with the same name, so using `struct` with them is optional. I usually leave it off.
 
-[`test.h`](/test.h) and [`assertion.h`](/assertion.h) have the complete public interface and documentation. There are examples in [`examples/`](/examples/) which are compiled with `make`. Test.c's [tests](/tests/) are written with Test.c. You can read those for an extensive example of using Test.c, and to see its particular behaviors.
+[`test.h`](/test.h) and [`assertion.h`](/assertion.h) have the complete public interface and documentation. There are [`examples/`](/examples/) which are compiled with `make`. Test.c's [`tests/`](/tests/) are written with Test.c. You can read those for an extensive example of using Test.c, and to see its particular behaviors.
 
-Files that include `test.h` or `assertion.h` need to be able to `#include <macromap.h/macromap.h>`, from [Macromap.h](https://github.com/mcinglis/macromap.h). Have a look at [Trie.c](https://github.com/mcinglis/trie.c) for an example of how to manage this (and for another example of using Test.c).
+Files that include `test.h` or `assertion.h` need to be able to `#include <macromap.h/macromap.h>`, from [Macromap.h](https://github.com/mcinglis/macromap.h). [`Module.mk`](/Module.mk) is provided to make this easier.
 
 
 ## Releases
@@ -73,7 +73,7 @@ I try to [tag](http://git-scm.com/book/en/Git-Basics-Tagging) the releases accor
 
 ## Building
 
-Test.c compiles with GCC 4.8 and Clang 3.2 (and later). It should compile with any C11 compiler that can [generate dependency files](/Makefile#L70).
+Test.c compiles with GCC 4.8 and Clang 3.2 (and later). It should compile with any C11 compiler that can [generate dependency files](/Makefile#L77).
 
 ``` sh
 # Initialize and update the submodules (you need to do this once after
