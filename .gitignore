@@ -1,7 +1,7 @@
 *.o
 *.dep.mk
-.*.make
 .*.swp
+.*.swo
 examples/numbers
 examples/sum
 tests/main
