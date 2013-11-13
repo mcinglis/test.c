@@ -27,7 +27,7 @@
 
 void test_assertion_print( TestAssertion const a,
                            FILE * const file,
-                           char const * indent )
+                           char const * const indent )
 {
     fprintf( file, "%s:  %s", ( a.result == true ) ? "true" : "false",
                               a.expr );

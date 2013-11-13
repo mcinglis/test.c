@@ -1,8 +1,7 @@
 # See <http://about.travis-ci.org/docs/>
 language: c
-compiler:
-    - gcc
-    - clang
+compiler: clang
+# Travis CI's GCC (v4.6) doesn't support C11.
 before_install: git submodule update --init --recursive
 install: make
 script: make test

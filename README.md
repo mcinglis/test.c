@@ -1,5 +1,7 @@
 # Test.c
 
+[![Travis CI build status](https://api.travis-ci.org/mcinglis/test.c.png)](https://travis-ci.org/mcinglis/test.c)
+
 Test.c is a modern, simple testing library for C.
 
 ``` c
@@ -71,7 +73,7 @@ I try to [tag](http://git-scm.com/book/en/Git-Basics-Tagging) the releases accor
 
 ## Building
 
-Test.c compiles with GCC 4.8 and Clang 3.3. It should compile with any C11 compiler that can [generate dependency files](/Makefile#L70).
+Test.c compiles with GCC 4.8 and Clang 3.2 (and later). It should compile with any C11 compiler that can [generate dependency files](/Makefile#L70).
 
 ``` sh
 # Initialize and update the submodules (you need to do this once after
