@@ -3,6 +3,6 @@ language: c
 compiler: clang
 # Travis CI's GCC (v4.6) doesn't support C11.
 before_install: git submodule update --init --recursive
-install: make CFLAGS='-std=c11 -O2'
+install: make CFLAGS='-std=c11'
 script: make test
 

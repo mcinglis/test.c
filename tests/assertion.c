@@ -31,6 +31,14 @@
 // Example functions and data for use in testing.
 // ----------
 
+// Used as an example of a function call as a boolean expression.
+static bool numbers_eq( int x, int y, int z ) {
+    return x == y && y == z;
+}
+
+// Used as an example of a macro that evaluates to a boolean expression.
+#define NUMBERS_EQ_5( Y, Z ) numbers_eq( 5, Y, Z )
+
 // `TEST_REQUIRE` passes, and no further assertions are made.
 static TestAssertion * ex_require_pass_1( void ) {
     for ( int i = 0; i < 10; i += 1 ) {
@@ -201,19 +209,20 @@ TestAssertion * test_assert__gives_right_assertions( void * const data )
 {
     TestAssertion * * const to_free = data;
     TestAssertion * const as = to_free[ 0 ] = test_assert(
-        1 == 1,
         4 / 2 == 3,
-        strcmp( "hello", "hello" ) == 0
+        numbers_eq( 12, 3 + 9, 24 / 2 ),
+        NUMBERS_EQ_5( 2 + 3, 7 - 3 ) == false
     );
     return test_assert(
         test_assertion_eq( as[ 0 ], ( TestAssertion ){
-            .expr = "1 == 1", .result = true
-        } ),
-        test_assertion_eq( as[ 1 ], ( TestAssertion ){
             .expr = "4 / 2 == 3", .result = false
         } ),
+        test_assertion_eq( as[ 1 ], ( TestAssertion ){
+            .expr = "numbers_eq( 12, 3 + 9, 24 / 2 )", .result = true
+        } ),
+        // Macros are expanded before being stringified.
         test_assertion_eq( as[ 2 ], ( TestAssertion ){
-            .expr = "strcmp( \"hello\", \"hello\" ) == 0", .result = true
+            .expr = "numbers_eq( 5, 2 + 3, 7 - 3 ) == 0", .result = true
         } ),
         test_assertion_eq( as[ 3 ], ( TestAssertion ){ .expr = NULL } )
     );
