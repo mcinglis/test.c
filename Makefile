@@ -34,7 +34,7 @@ CFLAGS += -std=c11 -g -Wall -Wextra -Wpedantic \
           -Wcast-align -Wnested-externs -Wno-missing-field-initializers
 
 ifeq ($(CC),gcc)
-    CFLAGS += -Og -fstack-protector-strong -Wjump-misses-init -Wlogical-op
+    CFLAGS += -Og -Wjump-misses-init -Wlogical-op
 endif
 ifeq ($(CC),clang)
     CFLAGS += -O0
