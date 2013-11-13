@@ -5,7 +5,8 @@
 # - `dep_ext`: the file extension you're using for the
 #   automatically-generated Make target files (via the `-M` preprocessor
 #   option); you can ignore this if you don't want it.
-# and then include this file.
+# and then include this file. You'll have to `include $(testc_dep)`
+# yourself to get the dependencies for Test.c's object files.
 
 testc_src = $(wildcard $(testc)/*.c)
 testc_obj = $(testc_src:.c=.o)
