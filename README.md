@@ -118,6 +118,7 @@ Finished test tests: 7 passed, and 0 failed.
 
 - Test.c
 - [Trie.c](https://github.com/mcinglis/trie.c)
+- [Bytes.c](https://github.com/mcinglis/bytes.c)
 
 Please let me know if you know of any others. It would be great to hear that other people find this useful.
 
