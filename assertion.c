@@ -16,100 +16,106 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-#include "assertion.h" // TestAssertion, TestAssertionId
+#include "assertion.h" // Assertion
 
 #include <string.h>
 #include <assert.h>
+#include <stdio.h>
 
 #include "_common.h" // string_eq
+#include "assertion-id.h" // AssertionId
+#include "assertion-ids.h" // AssertionIds, assertion_ids_*
 
 
-static
-bool test_assertion_id_eq( TestAssertionId const id1,
-                           TestAssertionId const id2 )
+bool assertion_is_valid( Assertion const a )
 {
-    return id1.value == id2.value
-        && string_eq( id1.expr, id2.expr );
+    return a.expr != NULL
+        && ( a.ids == NULL
+          || assertion_ids_is_valid( *( a.ids ) ) );
 }
 
 
-static
-bool test_assertion_ids_eq( TestAssertion const a1,
-                            TestAssertion const a2 )
+void assertion_assert_valid( Assertion const a )
 {
-    if ( a1.num_ids != a2.num_ids ) {
-        return false;
+    assert( a.expr != NULL );
+    if ( a.ids != NULL ) {
+        assertion_ids_assert_valid( *( a.ids ) );
     }
-    if ( a1.ids == a2.ids ) {
-        return true;
-    }
-    for ( size_t i = 0; i < a1.num_ids; i += 1 ) {
-        if ( !test_assertion_id_eq( a1.ids[ i ], a2.ids[ i ] ) ) {
-            return false;
-        }
-    }
-    return true;
 }
 
 
-bool test_assertion_eq( TestAssertion const a1, TestAssertion const a2 )
+Assertion * assertion_new_( struct assertion_new_options const o )
 {
+    Assertion * const a = malloc( sizeof ( Assertion ) );
+    *a = ( Assertion ){
+        .expr = o.expr,
+        .result = o.result,
+        .ids = assertion_ids_new( .array = o.ids )
+    };
+    return a;
+}
+
+
+Assertion * assertion_copy( Assertion const a )
+{
+    assertion_assert_valid( a );
+    Assertion * const copy = malloc( sizeof a );
+    *copy = ( Assertion ){
+        .expr = a.expr,
+        .result = a.result,
+        .ids = ( a.ids == NULL ) ? assertion_ids_empty()
+                                 : assertion_ids_copy( *( a.ids ) )
+    };
+    return copy;
+}
+
+
+void assertion_free( Assertion * const a )
+{
+    if ( a != NULL ) {
+        assertion_assert_valid( *a );
+        assertion_ids_free( a->ids );
+        free( a );
+    }
+}
+
+
+bool assertion_eq( Assertion const a1, Assertion const a2 )
+{
+    assertion_assert_valid( a1 );
+    assertion_assert_valid( a2 );
     return a1.result == a2.result
         && string_eq( a1.expr, a2.expr )
-        && test_assertion_ids_eq( a1, a2 );
+        && ( a1.ids == a2.ids
+          || ( !assertion_has_ids( a1 )
+            && !assertion_has_ids( a2 ) )
+          || ( a1.ids != NULL
+            && a2.ids != NULL
+            && assertion_ids_eq( *( a1.ids ), *( a2.ids ) ) ) );
 }
 
 
-bool test_assertion_is_end( TestAssertion const a )
+bool assertion_has_ids( Assertion const a )
 {
-    return test_assertion_eq( a, ( TestAssertion ) TEST_ASSERTIONS_END );
+    assertion_assert_valid( a );
+    return a.ids != NULL && !assertion_ids_is_empty( *( a.ids ) );
 }
 
 
-static
-size_t test_assertions_size( TestAssertion const * const as )
+void assertion_print_( struct assertion_print_options const o )
 {
-    assert( as != NULL );
-    int len = 0;
-    for ( int i = 0; !test_assertion_is_end( as[ i ] ); i += 1 ) {
-        len += 1;
+    Assertion const a = o.assertion;
+    assertion_assert_valid( a );
+    FILE * const file = ( o.file == NULL ) ? stdout : o.file;
+    char const * const ids_indent = ( o.ids_indent == NULL ) ? ""
+                                                             : o.ids_indent;
+
+    fprintf( file, "%s:  %s\n", ( a.result == true ) ? "true" : "false",
+                                a.expr );
+    if ( assertion_has_ids( a ) ) {
+        fprintf( file, "%s", ids_indent );
+        assertion_ids_print( .ids = *( a.ids ), .file = file );
     }
-    return len + 1;
 }
 
-
-TestAssertion * test_assertions_alloc( TestAssertion const * const as )
-{
-    assert( as != NULL );
-    size_t const as_bytes = test_assertions_size( as )
-                            * sizeof( TestAssertion );
-    TestAssertion * const alloc = malloc( as_bytes );
-    memcpy( alloc, as, as_bytes );
-    // Copy the identifications of each of the given assertions.
-    for ( size_t i = 0; !test_assertion_is_end( as[ i ] ); i += 1 ) {
-        if ( as[ i ].ids != NULL ) {
-            // If the first identification expression is a literal `0`,
-            // don't give the allocated assertion any identifications.
-            if ( strcmp( as[ i ].ids[ 0 ].expr, "0" ) == 0 ) {
-                alloc[ i ].ids = NULL;
-                alloc[ i ].num_ids = 0;
-            } else {
-                size_t const ids_bytes = as[ i ].num_ids
-                                         * sizeof( TestAssertionId );
-                alloc[ i ].ids = malloc( ids_bytes );
-                memcpy( alloc[ i ].ids, as[ i ].ids, ids_bytes );
-            }
-        }
-    }
-    return alloc;
-}
-
-
-void test_assertions_free( TestAssertion * const as )
-{
-    for ( size_t i = 0; !test_assertion_is_end( as[ i ] ); i += 1 ) {
-        free( as[ i ].ids );
-    }
-    free( as );
-}
 

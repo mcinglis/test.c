@@ -24,6 +24,18 @@
 #include <stdbool.h>
 
 
+#define MAX( A, B ) \
+    ( ( A ) > ( B ) ? ( A ) : ( B ) )
+
+
+#define MIN( A, B ) \
+    ( ( A ) < ( B ) ? ( A ) : ( B ) )
+
+
+#define NELEM( XS ) \
+    ( ( sizeof XS ) / ( sizeof XS[ 0 ] ) )
+
+
 // Returns true if both of the given pointers point to the same array,
 // or are both null, or if `strcmp( s1, s2 ) == 0`.
 bool string_eq( char const * const s1, char const * const s2 );

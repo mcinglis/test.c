@@ -18,62 +18,49 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include <test.h>
-// Test, TestAssertion, test_assert, TEST_REQUIRE, tests_run
+// Test, TEST_ARRAY, test*, Assertions, assertions*
 
 
-void * before_each( void )
+struct Assertions * numbers( void )
 {
-    int const xs[] = { 2, 4, 8, 5, 3 };
-    int * const mem = malloc( sizeof( xs ) );
-    memcpy( mem, xs, sizeof( xs ) );
-    return mem;
+    return assertions(
+        3 + 8 == 11,
+        4 * 4 > 10,
+        3 * 3 == 8 || 2 * 2 == 4
+    );
 }
 
 
-void after_each( void * const data )
+struct Assertions * strings( void )
 {
-    int * const xs = data;
-    free( xs );
+    return assertions(
+        strcmp( "any", "boolean" ) < 0,
+        strlen( "expression" ) != 3,
+        "works"[ 2 ] == 'x'
+    );
 }
 
 
-struct TestAssertion * addition_works( void * const data )
+struct Assertions * xs_is_increasing( void )
 {
-    return test_assert( 3 + 8 == 11 );
-}
-
-
-struct TestAssertion * multiplication_works( void * const data )
-{
-    int * const xs = data;
-    xs[ 2 ] = 3;
-    return test_assert( 2 * 2 == 5,
-                        3 * xs[ 2 ] == 9,
-                        xs[ 1 ] * 4 != 16 );
-}
-
-
-struct TestAssertion * xs_is_increasing( void * const data )
-{
-    int const * const xs = data;
-    for ( int i = 0; i < 4; i += 1 ) {
-        TEST_REQUIRE( xs[ i ] <= xs[ i + 1 ],
-                      i, xs[ i ], xs[ i + 1 ] );
+    int const xs[] = { 3, 14, 98, 34, 291, 498, 89, -1 };
+    struct Assertions * const as = assertions_empty();
+    for ( size_t i = 0; xs[ i + 1 ] != -1; i += 1 ) {
+        assertions_add( as, xs[ i ] <= xs[ i + 1 ],
+                            i, xs[ i ], xs[ i + 1 ] );
     }
-    return NULL;
+    return as;
 }
-
-
-struct Test const number_tests[] = TESTS_FIX( before_each, after_each,
-    addition_works,
-    multiplication_works,
-    xs_is_increasing
-);
 
 
 int main( void ) {
-    tests_run( "number", number_tests );
+    tests_run( "example", ( struct Test[] ) TEST_ARRAY(
+        numbers,
+        strings,
+        xs_is_increasing
+    ) );
 }
 

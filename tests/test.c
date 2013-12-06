@@ -1,5 +1,4 @@
 // tests/test.c
-// Tests the functions exported by `test.h`.
 
 // Copyright (C) 2013  Malcolm Inglis <http://minglis.id.au/>
 //
@@ -20,128 +19,38 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <unistd.h>
+#include <assert.h>
 
-#include <test.h>
+#include <test.h> // Test, Assertions, TEST*, test*, assertion*
 
-#include "common.h" // NELEM
+#include <_common.h> // NELEM
 
 
 // ----------
 // Example functions and data for use in testing.
 // ----------
 
-static TestAssertion * ex_func_1( void * const d ) { return NULL; }
-static TestAssertion * ex_func_2( void * const d ) { return NULL; }
+static Assertions * func_1( void ) { return assertions( 1 == 1, 10 > 3 ); }
+static Assertions * func_2( void ) { return assertions_empty(); }
 
-// This lets us test that the `TESTS` and `TESTS_FIX` macros work
-// correctly when their arguments aren't just a function name.
-static test_function ex_func_gen( int const x, int const y )
-    { return ex_func_1; }
+static Assertions * func_fail_1( void ) { return assertions( 2 == 2, 1 < 1 ); }
+static Assertions * func_fail_2( void ) { return assertions( false ); }
 
-static TestAssertion * ex_func_fail_1( void * const d )
-    { return test_assert( false ); }
-static TestAssertion * ex_func_fail_2( void * const d )
-    { return test_assert( false ); }
-
-static void * ex_before_1( void ) { return NULL; }
-static void * ex_before_2( void ) { return NULL; }
-
-static void ex_after_1( void * const d ) {}
-static void ex_after_2( void * const d ) {}
+// This lets us test that `TEST_ARRAY` works when its arguments aren't
+// just function names.
+static test_fn func_gen( int const x, int const y ) { return func_1; }
 
 // None of these tests should be equal.
-static Test const ex_tests[] = {
-
-    // `test_is_end__is_correct()` requires this to be first, so you
-    // need to iterate over this array with `NELEM`.
-    TESTS_END,
-
-    // No fixture functions.
-    { .func = ex_func_1, .name = "" },
-    { .func = ex_func_1, .name = "foo" },
-    { .func = ex_func_1, .name = "example name" },
-    { .func = ex_func_2, .name = "" },
-    { .func = ex_func_2, .name = "foo" },
-    { .func = ex_func_2, .name = "example name" },
-
-    // Only a `before` fixture function.
-    { .func = ex_func_1, .name = "",             .before = ex_before_1 },
-    { .func = ex_func_1, .name = "foo",          .before = ex_before_1 },
-    { .func = ex_func_1, .name = "example name", .before = ex_before_1 },
-    { .func = ex_func_2, .name = "",             .before = ex_before_1 },
-    { .func = ex_func_2, .name = "foo",          .before = ex_before_1 },
-    { .func = ex_func_2, .name = "example name", .before = ex_before_1 },
-    { .func = ex_func_1, .name = "",             .before = ex_before_2 },
-    { .func = ex_func_1, .name = "foo",          .before = ex_before_2 },
-    { .func = ex_func_1, .name = "example name", .before = ex_before_2 },
-    { .func = ex_func_2, .name = "",             .before = ex_before_2 },
-    { .func = ex_func_2, .name = "foo",          .before = ex_before_2 },
-    { .func = ex_func_2, .name = "example name", .before = ex_before_2 },
-
-    // Only an `after` fixture function.
-    { .func = ex_func_1, .name = "",             .after = ex_after_1 },
-    { .func = ex_func_1, .name = "foo",          .after = ex_after_1 },
-    { .func = ex_func_1, .name = "example name", .after = ex_after_1 },
-    { .func = ex_func_2, .name = "",             .after = ex_after_1 },
-    { .func = ex_func_2, .name = "foo",          .after = ex_after_1 },
-    { .func = ex_func_2, .name = "example name", .after = ex_after_1 },
-    { .func = ex_func_1, .name = "",             .after = ex_after_2 },
-    { .func = ex_func_1, .name = "foo",          .after = ex_after_2 },
-    { .func = ex_func_1, .name = "example name", .after = ex_after_2 },
-    { .func = ex_func_2, .name = "",             .after = ex_after_2 },
-    { .func = ex_func_2, .name = "foo",          .after = ex_after_2 },
-    { .func = ex_func_2, .name = "example name", .after = ex_after_2 },
-
-    // Both a `before` and `after` fixture functions.
-    { .func = ex_func_1, .name = "",             .before = ex_before_1,
-                                                 .after  = ex_after_1 },
-    { .func = ex_func_1, .name = "foo",          .before = ex_before_1,
-                                                 .after  = ex_after_1 },
-    { .func = ex_func_1, .name = "example name", .before = ex_before_1,
-                                                 .after  = ex_after_1 },
-    { .func = ex_func_2, .name = "",             .before = ex_before_1,
-                                                 .after  = ex_after_1 },
-    { .func = ex_func_2, .name = "foo",          .before = ex_before_1,
-                                                 .after  = ex_after_1 },
-    { .func = ex_func_2, .name = "example name", .before = ex_before_1,
-                                                 .after  = ex_after_1 },
-    { .func = ex_func_1, .name = "",             .before = ex_before_2,
-                                                 .after  = ex_after_1 },
-    { .func = ex_func_1, .name = "foo",          .before = ex_before_2,
-                                                 .after  = ex_after_1 },
-    { .func = ex_func_1, .name = "example name", .before = ex_before_2,
-                                                 .after  = ex_after_1 },
-    { .func = ex_func_2, .name = "",             .before = ex_before_2,
-                                                 .after  = ex_after_1 },
-    { .func = ex_func_2, .name = "foo",          .before = ex_before_2,
-                                                 .after  = ex_after_1 },
-    { .func = ex_func_2, .name = "example name", .before = ex_before_2,
-                                                 .after  = ex_after_1 },
-    { .func = ex_func_1, .name = "",             .before = ex_before_1,
-                                                 .after  = ex_after_2 },
-    { .func = ex_func_1, .name = "foo",          .before = ex_before_1,
-                                                 .after  = ex_after_2 },
-    { .func = ex_func_1, .name = "example name", .before = ex_before_1,
-                                                 .after  = ex_after_2 },
-    { .func = ex_func_2, .name = "",             .before = ex_before_1,
-                                                 .after  = ex_after_2 },
-    { .func = ex_func_2, .name = "foo",          .before = ex_before_1,
-                                                 .after  = ex_after_2 },
-    { .func = ex_func_2, .name = "example name", .before = ex_before_1,
-                                                 .after  = ex_after_2 },
-    { .func = ex_func_1, .name = "",             .before = ex_before_2,
-                                                 .after  = ex_after_2 },
-    { .func = ex_func_1, .name = "foo",          .before = ex_before_2,
-                                                 .after  = ex_after_2 },
-    { .func = ex_func_1, .name = "example name", .before = ex_before_2,
-                                                 .after  = ex_after_2 },
-    { .func = ex_func_2, .name = "",             .before = ex_before_2,
-                                                 .after  = ex_after_2 },
-    { .func = ex_func_2, .name = "foo",          .before = ex_before_2,
-                                                 .after  = ex_after_2 },
-    { .func = ex_func_2, .name = "example name", .before = ex_before_2,
-                                                 .after  = ex_after_2 }
+static Test const tests[] = {
+    { .func = func_1,      .name = "" },
+    { .func = func_1,      .name = "foo" },
+    { .func = func_1,      .name = "example name" },
+    { .func = func_2,      .name = "" },
+    { .func = func_2,      .name = "foo" },
+    { .func = func_2,      .name = "example name" },
+    { .func = func_fail_1, .name = "" },
+    { .func = func_fail_1, .name = "foo" },
+    { .func = func_fail_1, .name = "example name" },
 };
 
 // ----------
@@ -150,179 +59,132 @@ static Test const ex_tests[] = {
 
 
 static
-void * before_each( void )
+FILE * open_output( void )
 {
-    FILE * const output = fopen( "/dev/null", "w" );
-    return output;
+    return fopen( "/dev/null", "w" );
 }
 
 
 static
-void after_each( void * const data )
+Assertions * test_eq__works( void )
 {
-    FILE * const output = data;
-    fclose( output );
-}
-
-
-static
-TestAssertion * test_eq__is_correct( void * const data )
-{
-    for ( size_t i = 0; i < NELEM( ex_tests ); i += 1 ) {
-        for ( size_t j = 0; j < NELEM( ex_tests ); j += 1 ) {
-            bool const both_equal = test_eq( ex_tests[ i ], ex_tests[ j ] )
-                                 && test_eq( ex_tests[ j ], ex_tests[ i ] );
+    Assertions * const as = assertions_empty();
+    for ( size_t i = 0; i < NELEM( tests ); i += 1 ) {
+        for ( size_t j = 0; j < NELEM( tests ); j += 1 ) {
+            bool const eq_ij = test_eq( tests[ i ], tests[ j ] );
+            bool const eq_ji = test_eq( tests[ j ], tests[ i ] );
             if ( j == i ) {
-                TEST_REQUIRE( both_equal, i, j );
+                assertions_add( as, eq_ij, i, j );
+                assertions_add( as, eq_ji, i, j );
             } else {
-                TEST_REQUIRE( !both_equal, i, j );
+                assertions_add( as, !eq_ij, i, j );
+                assertions_add( as, !eq_ji, i, j );
             }
         }
     }
-    return NULL;
+    return as;
 }
 
 
 static
-TestAssertion * test_is_end__is_correct( void * const data )
+Assertions * TEST_ARRAY__gives_right_tests( void )
 {
-    for ( size_t i = 1; i < NELEM( ex_tests ); i += 1 ) {
-        TEST_REQUIRE( !test_is_end( ex_tests[ i ] ), i );
-    }
-    return test_assert( test_is_end( ex_tests[ 0 ] ) );
-}
-
-
-static
-TestAssertion * TESTS__gives_right_tests( void * const data )
-{
-    Test const tests[] = TESTS( ex_func_1,
-                                ex_func_gen( 1, 2 ),
-                                ex_func_2 );
-    return test_assert(
-        test_eq( tests[ 0 ], ( Test ){
-            .name = "ex_func_1", .func = ex_func_1
+    Test const ts[] = TEST_ARRAY(
+        func_1,
+        func_gen( 1, 2 ),
+        func_2
+    );
+    return assertions(
+        test_eq( ts[ 0 ], ( Test ){
+            .func = func_1,
+            .name = "func_1"
         } ),
-        test_eq( tests[ 1 ], ( Test ){
-            .name = "ex_func_gen( 1, 2 )", .func = ex_func_gen( 1, 2 )
+        test_eq( ts[ 1 ], ( Test ){
+            .func = func_gen( 1, 2 ),
+            .name = "func_gen( 1, 2 )"
         } ),
-        test_eq( tests[ 2 ], ( Test ){
-            .name = "ex_func_2", .func = ex_func_2
+        test_eq( ts[ 2 ], ( Test ){
+            .func = func_2,
+            .name = "func_2"
         } ),
-        test_is_end( tests[ 3 ] )
+        ts[ 3 ].func == NULL
     );
 }
 
 
 static
-TestAssertion * TESTS_FIX__gives_right_tests( void * const data )
+Assertions * tests_run__no_fails( void )
 {
-    Test const tests[] = TESTS_FIX( ex_before_1, ex_after_1,
-        ex_func_1,
-        ex_func_2,
-        ex_func_gen( 3, 2 )
-    );
-    return test_assert(
-        test_eq( tests[ 0 ], ( Test ){
-            .name = "ex_func_1",
-            .func = ex_func_1,
-            .before = ex_before_1,
-            .after = ex_after_1
-        } ),
-        test_eq( tests[ 1 ], ( Test ){
-            .name = "ex_func_2",
-            .func = ex_func_2,
-            .before = ex_before_1,
-            .after = ex_after_1
-        } ),
-        test_eq( tests[ 2 ], ( Test ){
-            .name = "ex_func_gen( 3, 2 )",
-            .func = ex_func_gen( 3, 2 ),
-            .before = ex_before_1,
-            .after = ex_after_1
-        } ),
-        test_is_end( tests[ 3 ] )
-    );
+    // Given:
+    char const name[] = "no fails";
+    Test const ts[] = TEST_ARRAY( func_1, func_2, func_gen( 1, 2 ) );
+    FILE * const output = open_output();
+
+    // When:
+    int const fails = tests_run( .name = name, .tests = ts, .file = output );
+    fclose( output );
+
+    // Then:
+    return assertions( fails == 0 );
 }
 
 
 static
-TestAssertion * tests_run__gives_right_results( void * const data )
+Assertions * tests_run__some_fails( void )
 {
-    FILE * const output = data;
-    TestResults const tr1 = tests_run(
-        .name = "no fails",
-        .tests = ( Test[] ) TESTS( ex_func_1, ex_func_2 ),
-        .file = output
-    );
-    TestResults const tr2 = tests_run(
-        .name = "all fails",
-        .tests = ( Test[] ) TESTS( ex_func_fail_1, ex_func_fail_2 ),
-        .file = output
-    );
-    TestResults const tr3 = tests_run(
-        .name = "mixed",
-        .tests = ( Test[] ) TESTS( ex_func_1, ex_func_fail_1, ex_func_2,
-                                   ex_func_fail_2, ex_func_1 ),
-        .file = output
-    );
-    return test_assert(
-        tr1.passed == 2, tr1.failed == 0,
-        tr2.passed == 0, tr2.failed == 2,
-        tr3.passed == 3, tr3.failed == 2
-    );
+    // Given:
+    char const name[] = "some fails";
+    Test const ts[] = TEST_ARRAY( func_1, func_fail_1, func_2,
+                                  func_fail_2, func_1, func_fail_2 );
+    FILE * const output = open_output();
+
+    // When:
+    int const fails = tests_run( .name = name, .tests = ts, .file = output );
+    fclose( output );
+
+    // Then:
+    return assertions( fails == 3 );
 }
 
 
 static
-TestAssertion * tests_return_val__gives_0_when_all_pass( void * const data )
+Assertions * tests_run__all_fails( void )
 {
-    FILE * const output = data;
-    int v = tests_return_val(
-        tests_run(
-            .name = "all pass",
-            .tests = ( Test[] ) TESTS( ex_func_1, ex_func_2,
-                                       ex_func_gen( 1, 2 ) ),
-            .file = output
-        ),
-        tests_run(
-            .name = "also all pass",
-            .tests = ( Test[] ) TESTS( ex_func_gen( 3, 4 ) ),
-            .file = output
-        )
-    );
-    return test_assert( v == 0 );
+    // Given:
+    char const name[] = "all fails";
+    Test const ts[] = TEST_ARRAY( func_fail_2, func_fail_1 );
+    FILE * const output = open_output();
+
+    // When:
+    int const fails = tests_run( .name = name, .tests = ts, .file = output );
+    fclose( output );
+
+    // Then:
+    return assertions( fails == 2 );
 }
 
 
 static
-TestAssertion * tests_return_val__gives_1_when_some_fail( void * const data )
+Assertions * tests_return_val__works( void )
 {
-    FILE * const output = data;
-    int v = tests_return_val(
-        tests_run(
-            .name = "all pass",
-            .tests = ( Test[] ) TESTS( ex_func_1, ex_func_2,
-                                       ex_func_gen( 1, 2 ) ),
-            .file = output
-        ),
-        tests_run(
-            .name = "one fail",
-            .tests = ( Test[] ) TESTS( ex_func_gen( 3, 4 ), ex_func_fail_1 ),
-            .file = output
-        )
+    return assertions(
+        tests_return_val( 0 ) == 0,
+        tests_return_val( 0, 0 ) == 0,
+        tests_return_val( 3 ) == 1,
+        tests_return_val( 0, 1 ) == 1,
+        tests_return_val( 0, 0, 2 ) == 1,
+        tests_return_val( 0, 1, 0 ) == 1,
+        tests_return_val( 4, 2, 1 ) == 1
     );
-    return test_assert( v == 1 );
 }
 
 
-Test const test_tests[] = TESTS_FIX( before_each, after_each,
-    test_eq__is_correct,
-    test_is_end__is_correct,
-    TESTS__gives_right_tests,
-    TESTS_FIX__gives_right_tests,
-    tests_run__gives_right_results,
-    tests_return_val__gives_0_when_all_pass,
-    tests_return_val__gives_1_when_some_fail
+Test const test_tests[] = TEST_ARRAY(
+    test_eq__works,
+    TEST_ARRAY__gives_right_tests,
+    tests_run__no_fails,
+    tests_run__some_fails,
+    tests_run__all_fails,
+    tests_return_val__works
 );
 

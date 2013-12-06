@@ -16,11 +16,10 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-#include "test.h"
-// Test, TestAssertion, test_assert, TEST_REQUIRE, tests_run
+#include <test.h>
+// Test, TestAssertion, TestData, test_assert, TEST_REQUIRE, tests_run
 
-
-#define NELEM( XS ) ( sizeof( XS ) / sizeof( XS[ 0 ] ) )
+#include <_common.h> // NELEM
 
 
 int sum( int const * const xs, int const n )
@@ -33,27 +32,31 @@ int sum( int const * const xs, int const n )
 }
 
 
-TestAssertion * sum_declared( void * const data )
+Assertions * declared( void )
 {
     int xs[] = { 1, 2, 3 };
     int ys[] = { 4, 5, 6, 7, 8 };
-    return test_assert( sum( xs, NELEM( xs ) ) == 6,
-                        sum( ys, NELEM( ys ) ) == 30 );
+    return assertions(
+        sum( xs, NELEM( xs ) ) == 6,
+        sum( ys, NELEM( ys ) ) == 30
+    );
 }
 
 
-TestAssertion * sum_literal( void * const data )
+Assertions * literal( void )
 {
-    return test_assert( sum( ( int[] ){ 0 }, 0 ) == 0,
-                        sum( ( int[] ){ -1, 8 }, 2 ) == 7,
-                        sum( ( int[] ){ 1, 0, 1 }, 3 ) == 2 );
+    return assertions(
+        sum( ( int[] ){ 0 }, 0 ) == 0,
+        sum( ( int[] ){ -1, 8 }, 2 ) == 7,
+        sum( ( int[] ){ 1, 0, 1 }, 3 ) == 2
+    );
 }
 
 
 int main( void ) {
-    tests_run( "sum", ( Test[] ) TESTS(
-        sum_declared,
-        sum_literal
+    tests_run( "sum", ( Test[] ) TEST_ARRAY(
+        declared,
+        literal
     ) );
 }
 

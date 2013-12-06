@@ -16,115 +16,88 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-#include "test.h" // Test, TestResults
+#include "test.h" // Test
 
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
 
-#include "assertion.h"
-// TestAssertion, test_assertion_is_end, test_assertions_free
-#include "_assertion.h" // test_assertion_print
+#include "assertion.h" // TestAssertion, test_assertion*
 #include "_common.h" // string_eq
 
 
 bool test_eq( Test const t1, Test const t2 )
 {
     return t1.func == t2.func
-        && t1.before == t2.before
-        && t1.after == t2.after
         && string_eq( t1.name, t2.name );
 }
 
 
-bool test_is_end( Test const t )
-{
-    return test_eq( t, ( Test ) TESTS_END );
-}
-
-
 static
-TestAssertion * test_gen_assertions( Test const test )
+char * repeat( char const * const string, size_t const times )
 {
-    assert( test.func != NULL );
-
-    void * const data = ( test.before == NULL ) ? NULL : test.before();
-    TestAssertion * const assertions = test.func( data );
-    if ( test.after != NULL ) {
-        test.after( data );
+    char * const new = calloc( ( strlen( string ) * times ) + 1, 1 );
+    for ( size_t i = 0; i < times; i += 1 ) {
+        strcat( new, string );
     }
-    return assertions;
+    return new;
 }
 
 
-static
-bool test_run( Test const test, FILE * file, char const * const indent )
+bool test_run_( struct test_run_options const o )
 {
-    assert( file != NULL );
-    assert( test.func != NULL );
-    assert( indent != NULL );
+    Test const test = o.test;
+    FILE * const file = ( o.file == NULL ) ? stdout : o.file;
+    char const * const indent = ( o.indent == NULL ) ? "" : o.indent;
 
-    bool pass = true;
-    TestAssertion * const as = test_gen_assertions( test );
-    if ( as != NULL ) {
-        for ( size_t i = 0; !test_assertion_is_end( as[ i ] ); i += 1 ) {
-            if ( as[ i ].result == false ) {
-                // If this is the first false assertion we've seen,
-                // print a line saying that the test has failed.
-                if ( pass == true ) {
-                    fprintf( file, "%s", indent );
-                    fprintf( file, "fail:  %s\n", test.name );
-                }
-                fprintf( file, "%s%s", indent, indent );
-                // TODO: work out how to build the indent here so that
-                // `test_assertion_print` doesn't need to "multiply" the
-                // indent manually.
-                test_assertion_print( as[ i ], file, indent );
-                pass = false;
-            }
-        }
-        test_assertions_free( as );
+    Assertions * const as = test.func();
+    assert( as != NULL );
+    bool const passed = assertions_all_true( *as );
+    fprintf( file, "%s%s:  %s\n",
+             indent, passed ? "pass" : "fail", test.name );
+    if ( !passed ) {
+        char * const indent2 = repeat( indent, 2 );
+        char * const indent3 = repeat( indent, 3 );
+        assertions_print( false, .assertions = *as,
+                                 .file = file,
+                                 .assertion_indent = indent2,
+                                 .ids_indent = indent3 );
+        free( indent2 );
+        free( indent3 );
     }
-    if ( pass == true ) {
-        fprintf( file, "%s", indent );
-        fprintf( file, "pass:  %s\n", test.name );
-    }
-    return pass;
+    assertions_free( as );
+    return passed;
 }
 
 
-TestResults tests_run_( struct tests_run_options o )
+int tests_run_( struct tests_run_options const o )
 {
-    assert( o.name != NULL );
-    assert( o.tests != NULL );
-    if ( o.file == NULL ) {
-        o.file = stdout;
-    }
+    char const * const name = o.name;
+    assert( name != NULL );
+    Test const * const tests = o.tests;
+    assert( tests != NULL );
+    FILE * const file = ( o.file == NULL ) ? stdout : o.file;
+    char const * const indent = ( o.indent == NULL ) ? "  " : o.indent;
 
-    fprintf( o.file, "Running %s tests...\n", o.name );
-    TestResults results = { .passed = 0, .failed = 0 };
-    for ( size_t i = 0; !test_is_end( o.tests[ i ] ); i += 1 ) {
-        bool passed = test_run( o.tests[ i ], o.file, "    " );
-        if ( passed ) {
-            results.passed += 1;
-        } else {
-            results.failed += 1;
+    fprintf( file, "Running %s tests...\n", name );
+    int failed = 0;
+    for ( size_t i = 0; tests[ i ].func != NULL; i += 1 ) {
+        bool const passed = test_run( .test = tests[ i ],
+                                      .file = file,
+                                      .indent = indent );
+        if ( !passed ) {
+            failed += 1;
         }
     }
-    fprintf( o.file, "Finished %s tests: %d passed, and %d failed.\n",
-             o.name, results.passed, results.failed );
-    return results;
+    return failed;
 }
 
 
-int tests_return_val_( TestResults const * rs )
+int tests_return_val_( int const * const fails )
 {
-    assert( rs != NULL );
-
-    // `{ .failed = -1 }` is the terminating value.
-    for ( size_t i = 0; rs[ i ].failed != -1; i += 1 ) {
-        if ( rs[ i ].failed > 0 ) {
+    for ( size_t i = 0; fails[ i ] != -1; i += 1 ) {
+        if ( fails[ i ] != 0 ) {
             return 1;
         }
     }

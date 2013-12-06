@@ -27,11 +27,11 @@ examples_bin = $(basename $(examples_src))
 CPPFLAGS += -I.
 
 CFLAGS += -std=c11 -g -Wall -Wextra -Wpedantic \
-          -Wshadow -Wcast-qual -Wcast-align \
+          -Wshadow -Wcast-align -Wnested-externs \
           -Wformat=2 -Wno-unused-parameter -Wwrite-strings \
           -Wstrict-prototypes -Wold-style-definition \
           -Wredundant-decls -Wmissing-include-dirs -Wswitch-default \
-          -Wcast-align -Wnested-externs -Wno-missing-field-initializers
+          -Wcast-align -Wno-missing-field-initializers
 
 ifeq ($(CC),gcc)
     CFLAGS += -Og -fstack-protector-strong -Wjump-misses-init -Wlogical-op
@@ -47,6 +47,11 @@ endif
 
 .PHONY: all
 all: $(testc_obj) tests examples
+
+.PHONY: fast
+fast: CPPFLAGS += -DNDEBUG
+fast: CFLAGS = -std=c11 -O2
+fast: all
 
 .PHONY: tests
 tests: $(tests_main)

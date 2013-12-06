@@ -1,4 +1,4 @@
-// tests/main.c
+// assertion-id.c
 
 // Copyright (C) 2013  Malcolm Inglis <http://minglis.id.au/>
 //
@@ -16,24 +16,40 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-#include <test.h> // Test, tests_return_val, tests_run
+#include "assertion-id.h" // AssertionId
+
+#include <stdlib.h>
+#include <assert.h>
+
+#include "_common.h" // string_eq
 
 
-extern Test const assertion_id_tests[];
-extern Test const assertion_ids_tests[];
-extern Test const assertions_tests[];
-extern Test const assertion_tests[];
-extern Test const test_tests[];
+AssertionId const assertion_id_array_end = ASSERTION_ID_ARRAY_END;
 
 
-int main( void )
+bool assertion_id_is_valid( AssertionId const id )
 {
-    return tests_return_val(
-        tests_run( "AssertionId", assertion_id_tests ),
-        tests_run( "AssertionIds", assertion_ids_tests ),
-        tests_run( "Assertions", assertions_tests ),
-        tests_run( "Assertion", assertion_tests ),
-        tests_run( "Test", test_tests )
-    );
+    return id.expr != NULL;
+}
+
+
+void assertion_id_assert_valid( AssertionId const id )
+{
+    assert( id.expr != NULL );
+}
+
+
+bool assertion_id_eq( AssertionId const id1, AssertionId const id2 )
+{
+    assertion_id_assert_valid( id1 );
+    assertion_id_assert_valid( id2 );
+    return id1.value == id2.value
+        && string_eq( id1.expr, id2.expr );
+}
+
+
+bool assertion_id_is_array_end( AssertionId const id )
+{
+    return assertion_id_eq( id, assertion_id_array_end );
 }
 

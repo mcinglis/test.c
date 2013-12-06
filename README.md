@@ -5,70 +5,75 @@
 Test.c is a modern, simple testing library for C.
 
 ``` c
-#include <stdlib.h>
-#include <test.c/test.h>
+#include <test.c/test.h> // Test, TEST*, test*, Assertions, assertions_*
 
-void * before_each( void ) {
-    int const xs[] = { 2, 4, 8, 5, 3 };
-    int * const mem = malloc( sizeof( xs ) );
-    memcpy( mem, xs, sizeof( xs ) );
-    return mem;
+struct Assertions * numbers( void )
+{
+    return assertions(
+        3 + 8 == 11,
+        4 * 4 > 10,
+        3 * 3 == 8 || 2 * 2 == 4
+    );
 }
 
-void after_each( void * const data ) {
-    free( data );
+struct Assertions * strings( void )
+{
+    return assertions(
+        strcmp( "any", "boolean" ) < 0,
+        strlen( "expression" ) != 3,
+        "works"[ 2 ] == 'x'
+    );
 }
 
-struct TestAssertion * addition_works( void * const data ) {
-    return test_assert( 3 + 8 == 11 );
-}
-
-struct TestAssertion * multiplication_works( void * const data ) {
-    int * const xs = data;
-    xs[ 2 ] = 3;
-    return test_assert( 2 * 2 == 5,
-                        3 * xs[ 2 ] == 9,
-                        xs[ 1 ] * 4 != 16 );
-}
-
-struct TestAssertion * xs_is_increasing( void * const data ) {
-    int const * const xs = data;
-    for ( int i = 0; i < 4; i += 1 ) {
-        TEST_REQUIRE( xs[ i ] <= xs[ i + 1 ], i, xs[ i ], xs[ i + 1 ] );
+struct Assertions * xs_is_increasing( void )
+{
+    int const xs[] = { 3, 14, 98, 34, 291, 498, 89, -1 };
+    struct Assertions * const as = assertions_empty();
+    for ( size_t i = 0; xs[ i + 1 ] != -1; i += 1 ) {
+        assertions_add( as, xs[ i ] <= xs[ i + 1 ],
+                            i, xs[ i ], xs[ i + 1 ] );
     }
-    return NULL;
+    return as;
 }
-
-struct Test const number_tests[] = TESTS_FIX( before_each, after_each,
-    addition_works,
-    multiplication_works,
-    xs_is_increasing
-);
 
 int main( void ) {
-    tests_run( "number", number_tests );
-    // Running number tests...
-    //     pass:  addition_works
-    //     fail:  multiplication_works
-    //         false:  2 * 2 == 5
-    //         false:  xs[ 1 ] * 4 != 16
-    //     fail:  xs_is_increasing
-    //         false:  xs[ i ] <= xs[ i + 1 ]
-    //             (for i = 2, xs[ i ] = 8, xs[ i + 1 ] = 5)
-    // Finished number tests: 1 passed, and 2 failed.
+    tests_run( "example", ( struct Test[] ) TEST_ARRAY(
+        numbers,
+        strings,
+        xs_is_increasing
+    ) );
+    // Running example tests...
+    //  pass:  numbers
+    //  fail:  strings
+    //    false:  "works"[ 2 ] == 'x'
+    //  fail:  xs_is_increasing
+    //    false:  xs[ i ] <= xs[ i + 1 ]
+    //      (for i = 2, xs[ i ] = 98, xs[ i + 1 ] = 34)
+    //      (for i = 5, xs[ i ] = 498, xs[ i + 1 ] = 89)
 }
 ```
 
-The `Test` and `TestAssertion` structs are typedef'd with the same name, so using `struct` with them is optional. I usually leave it off.
+The `Test` and `Assertions` structs are typedef'd with the same name, so using `struct` with them is optional. I usually leave it off.
 
-[`test.h`](/test.h) and [`assertion.h`](/assertion.h) have the complete public interface and documentation. There are [`examples/`](/examples/) which are compiled with `make`. Test.c's [`tests/`](/tests/) are written with Test.c. You can read those for an extensive example of using Test.c, and to see its particular behaviors.
+While Test.c provides conveniences for the most common use cases, it's based on a flexible and capable structure. See [`test.h`](/test.h), [`assertions.h`](/assertions.h), [`assertion.h`](/assertion.h), [`assertion-ids.h`](/assertion-ids.h) and [`assertion-id.h`](/assertion-id.h) for the complete documentation. There are [`examples/`](/examples/) which are compiled with `make`. Test.c's [`tests/`](/tests/) are written with Test.c, and you can read those for much more extensive demonstration, and to see its particular behaviors.
 
-Files that include `test.h` or `assertion.h` need to be able to `#include <macromap.h/macromap.h>`, from [Macromap.h](https://github.com/mcinglis/macromap.h). [`Module.mk`](/Module.mk) is provided to make this easier.
+Files that include any "public" (not prefixed with `_`) header file need to be able to `#include <macromap.h/macromap.h>`, from [Macromap.h](https://github.com/mcinglis/macromap.h). [`Module.mk`](/Module.mk) is provided to make this easier. See the [projects using Test.c](#projects-using-testc) for examples of how to manage this.
+
+
+## Todo
+
+- [ ] 100% test coverage (currently: 50%?)
+- [ ] way to provide functions to run before and after `tests_run()`
+- [ ] utilities for diffing files (this should be a separate library)
 
 
 ## Releases
 
-I try to [tag](http://git-scm.com/book/en/Git-Basics-Tagging) the releases according to [semantic versioning v2.0.0](http://semver.org/spec/v2.0.0.html); the public interface is `test.h` and `assertion.h`. You can browse the releases [on GitHub](https://github.com/mcinglis/test.c/releases), but because this project uses [submodules](http://git-scm.com/book/en/Git-Tools-Submodules), the archives generated by GitHub won't compile. You have to clone this repository if you want to build it.
+I try to [tag](http://git-scm.com/book/en/Git-Basics-Tagging) the releases according to [semantic versioning v2.0.0](http://semver.org/spec/v2.0.0.html); all the headers not prefixed with `_` are considered public; you're welcome to use everything in those headers. I will bump the major version if an update will prevent existing code from compiling, or will make existing code do the wrong thing. I'll bump the minor version if I only add functionality that doesn't break existing code. I'll bump the patch version if I only fix a bug.
+
+Test.c reserves identifiers that begin with `Test`, `test`, `TEST`, `Assertion`, `assertion`, and `ASSERTION`. Its public interface should only ever provide such identifiers. You can provide your own utility methods with those prefixes if you wish, but there's a (tiny) possibility that a future minor update to Test.c will clash with that name.
+
+You can browse the releases [on GitHub](https://github.com/mcinglis/test.c/releases), but because this project uses [submodules](http://git-scm.com/book/en/Git-Tools-Submodules), the archives generated by GitHub won't compile. You have to clone this repository if you want to build it.
 
 
 ## Building
@@ -82,35 +87,12 @@ $ git submodule update --init --recursive
 
 # Then, to run the default development build (with debugging symbols):
 $ make
-# To build with optimizations and without debugging symbols:
-$ make CFLAGS='-std=c11 -O2'
+# To build with optimizations, and without debugging symbols and `assert()`
+$ make fast
 # To use your non-default C compiler:
 $ make CC=clang
 # If you don't have a C11 compiler, it can compile under C99 (for now):
 $ make CFLAGS='-std=c99'
-```
-
-
-## Tests
-
-```
-$ make test
-Running assertion tests...
-    pass:  test_assertion_eq__is_correct_for_neq
-    pass:  test_assertion_eq__is_correct_for_eq
-    pass:  test_assertion_is_end__is_correct
-    pass:  test_assert__gives_right_assertions
-    pass:  TEST_REQUIRE__returns_only_when_false
-Finished assertion tests: 5 passed, and 0 failed.
-Running test tests...
-    pass:  test_eq__is_correct
-    pass:  test_is_end__is_correct
-    pass:  TESTS__gives_right_tests
-    pass:  TESTS_FIX__gives_right_tests
-    pass:  tests_run__gives_right_results
-    pass:  tests_return_val__gives_0_when_all_pass
-    pass:  tests_return_val__gives_1_when_some_fail
-Finished test tests: 7 passed, and 0 failed.
 ```
 
 
