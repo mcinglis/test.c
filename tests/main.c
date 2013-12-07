@@ -21,8 +21,8 @@
 
 extern Test const assertion_id_tests[];
 extern Test const assertion_ids_tests[];
-extern Test const assertions_tests[];
 extern Test const assertion_tests[];
+extern Test const assertions_tests[];
 extern Test const test_tests[];
 
 
@@ -31,8 +31,8 @@ int main( void )
     return tests_return_val(
         tests_run( "AssertionId", assertion_id_tests ),
         tests_run( "AssertionIds", assertion_ids_tests ),
-        tests_run( "Assertions", assertions_tests ),
         tests_run( "Assertion", assertion_tests ),
+        tests_run( "Assertions", assertions_tests ),
         tests_run( "Test", test_tests )
     );
 }
