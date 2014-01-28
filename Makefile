@@ -3,30 +3,31 @@
 # Variables
 # -----
 
-testc = .
-dep_ext = .dep.mk
+include Dependencies.mk
 
-include Module.mk
+testc = .
+include Package.mk
 
 tests_src = $(wildcard tests/*.c)
 tests_obj = $(tests_src:.c=.o)
-tests_dep = $(tests_obj:.o=$(dep_ext))
+tests_dep = $(tests_obj:.o=.dep.mk)
 tests_main = tests/main
 
 examples_src = $(wildcard examples/*.c)
 examples_obj = $(examples_src:.c=.o)
-examples_dep = $(examples_obj:.o=$(dep_ext))
+examples_dep = $(examples_obj:.o=.dep.mk)
 examples_bin = $(basename $(examples_src))
+
+standard = c11
 
 
 # -----
 # Preprocessor and compiler flags
 # -----
 
-# For the tests and examples:
-CPPFLAGS += -I.
+CPPFLAGS += -I. -I./dependencies
 
-CFLAGS += -std=c11 -g -Wall -Wextra -Wpedantic \
+CFLAGS += -std=$(standard) -g -Wall -Wextra -Wpedantic \
           -Wshadow -Wcast-align -Wnested-externs \
           -Wformat=2 -Wno-unused-parameter -Wwrite-strings \
           -Wstrict-prototypes -Wold-style-definition \
@@ -50,7 +51,7 @@ all: $(testc_obj) tests examples
 
 .PHONY: fast
 fast: CPPFLAGS += -DNDEBUG
-fast: CFLAGS = -std=c11 -O2
+fast: CFLAGS = -std=$(standard) -O2
 fast: all
 
 .PHONY: tests
@@ -59,7 +60,7 @@ $(tests_main): $(tests_obj) $(testc_obj)
 
 .PHONY: test
 test: $(tests_main)
-	@./$(tests_main)
+	./$(tests_main)
 
 .PHONY: examples
 examples: $(examples_bin)
@@ -79,8 +80,8 @@ clean:
 # Have the compiler output dependency files with make targets for each
 # of the object files. The `MT` option specifies the dependency file
 # itself as a target, so that it's regenerated when it should be.
-%$(dep_ext): %.c
-	$(CC) $(CPPFLAGS) -MM -MP -MT '$(@:$(dep_ext)=.o) $@' $< > $@
+%.dep.mk: %.c
+	$(CC) $(CPPFLAGS) -MM -MP -MT '$(@:.dep.mk=.o) $@' $< > $@
 
 # Include each of those dependency files; Make will run the rule above
 # to generate each dependency file (if it needs to).
